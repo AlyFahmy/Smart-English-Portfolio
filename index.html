@@ -1,0 +1,1211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ECEFF3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F141B" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="English Portfolio">
+<title>Smart English Language Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,500&display=swap">
+<style>
+/* Layout: one reading column (index-card file); sticky header with three tabs; cards are the only boxed objects. */
+:root{
+  --paper:#ECEFF3; --card:#FBFCFD; --sunk:#E2E7EE; --ink:#141B26; --muted:#5A6577; --line:#D2D8E0;
+  --accent:#2B47B0; --accent-ink:#FFFFFF; --accent-soft:#DCE3FA;
+  --mark:#F5DC57; --mark-ink:#141B26;
+  --good:#1E7B4E; --warn:#A86300; --bad:#B3261E;
+  --st-new:#6E7889; --st-rec:#2B47B0; --st-call:#6B3FA0; --st-use:#A86300; --st-master:#1E7B4E;
+  --shadow:0 1px 2px rgba(20,27,38,.06),0 6px 20px rgba(20,27,38,.06);
+  --display:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --arabic:"Amiri","IBM Plex Sans Arabic","Geeza Pro","Arial",serif;
+  --arabic-ui:"IBM Plex Sans Arabic","IBM Plex Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F141B; --card:#18202A; --sunk:#121820; --ink:#E6EBF2; --muted:#98A4B6; --line:#2A3441;
+  --accent:#93A8FF; --accent-ink:#0C1222; --accent-soft:#25305A;
+  --mark:#E3C53C; --mark-ink:#141B26;
+  --good:#5CC48E; --warn:#E5A548; --bad:#F2837A;
+  --st-new:#9AA4B5; --st-rec:#93A8FF; --st-call:#C3A2EE; --st-use:#E5A548; --st-master:#5CC48E;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F141B; --card:#18202A; --sunk:#121820; --ink:#E6EBF2; --muted:#98A4B6; --line:#2A3441;
+  --accent:#93A8FF; --accent-ink:#0C1222; --accent-soft:#25305A;
+  --mark:#E3C53C; --mark-ink:#141B26;
+  --good:#5CC48E; --warn:#E5A548; --bad:#F2837A;
+  --st-new:#9AA4B5; --st-rec:#93A8FF; --st-call:#C3A2EE; --st-use:#E5A548; --st-master:#5CC48E;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+mark{background:linear-gradient(transparent 12%,var(--mark) 12%,var(--mark) 88%,transparent 88%);color:var(--mark-ink);padding:0 .15em;border-radius:2px}
+.ar{font-family:var(--arabic);direction:rtl;unicode-bidi:isolate}
+.ar-ui{font-family:var(--arabic-ui);direction:rtl;unicode-bidi:isolate}
+
+.shell{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+header.top .inner{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 0;display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand h1{font:600 21px/1.2 var(--display);letter-spacing:-.01em}
+.brand h1 span{color:var(--muted);font-weight:500;font-style:italic}
+.brand .ar-ui{font-size:13px;color:var(--muted)}
+nav.tabs{display:flex;gap:4px}
+nav.tabs button{background:none;border:0;padding:8px 12px 10px;cursor:pointer;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;gap:6px;align-items:center}
+nav.tabs button[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs .count{font-size:12px;font-variant-numeric:tabular-nums;background:var(--sunk);border-radius:99px;padding:0 7px;color:var(--muted)}
+
+main section{padding-top:22px;display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.pad{padding:20px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:8px;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink)}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.big{padding:12px 22px;font-size:16px}
+.iconbtn{border:1px solid var(--line);background:var(--card);border-radius:99px;width:34px;height:34px;display:inline-grid;place-items:center;cursor:pointer;color:var(--muted);flex:none}
+.iconbtn:hover{color:var(--accent);border-color:var(--accent)}
+svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--muted)}
+.in{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:10px 12px;font-size:15px;color:var(--ink)}
+.in:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.in{resize:vertical;min-height:80px;line-height:1.5}
+.in.term{font:500 19px/1.3 var(--display)}
+.in.ar{font-size:19px;text-align:right}
+.hint{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted)}
+.hint svg{flex:none;margin-top:2px}
+
+.seg{display:inline-flex;background:var(--sunk);border-radius:9px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 13px;border-radius:7px;cursor:pointer;color:var(--muted);font-weight:500;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* Status chips + Leitner pips */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.02em;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-new{color:var(--st-new);background:color-mix(in srgb,var(--st-new) 14%,transparent)}
+.s-rec{color:var(--st-rec);background:color-mix(in srgb,var(--st-rec) 14%,transparent)}
+.s-call{color:var(--st-call);background:color-mix(in srgb,var(--st-call) 14%,transparent)}
+.s-use{color:var(--st-use);background:color-mix(in srgb,var(--st-use) 15%,transparent)}
+.s-master{color:var(--st-master);background:color-mix(in srgb,var(--st-master) 15%,transparent)}
+.tag{font-size:11.5px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 7px;white-space:nowrap}
+.tag.ex{border-style:dashed}
+.pips{display:inline-flex;gap:3px;align-items:center}
+.pips i{width:12px;height:5px;border-radius:2px;background:var(--line)}
+.pips i.on{background:var(--accent)}
+
+/* Today */
+.hero{padding:26px 22px;display:flex;flex-direction:column;gap:14px}
+.hero .bignum{font:600 44px/1 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero h2{font:500 22px/1.3 var(--display)}
+.ladder{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--sunk)}
+.ladder span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+.legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat .n{font:600 26px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.notice{border:1px dashed var(--line);border-radius:10px;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+
+/* Review */
+.progress{display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.rcard{padding:26px 22px;display:flex;flex-direction:column;gap:18px;min-height:280px}
+.rcard .term{font:600 34px/1.15 var(--display);letter-spacing:-.015em;overflow-wrap:anywhere}
+.rcard .arbig{font-size:32px;line-height:1.5}
+.ipa{font-size:14px;color:var(--muted)}
+.sentence{font:italic 500 18px/1.55 var(--display);overflow-wrap:anywhere}
+.sentence.plain{font-style:normal;font-family:var(--body);font-size:15.5px;font-weight:400}
+.blank{display:inline-block;min-width:4.5em;border-bottom:2px solid var(--accent);color:transparent;line-height:1.1}
+.divider{height:1px;background:var(--line)}
+.kv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 14px;font-size:14.5px}
+.kv dt{color:var(--muted);font-size:12.5px;padding-top:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.ex-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.grades{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grade{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:600}
+.grade small{font-weight:400;color:var(--muted);font-size:12px}
+.grade.again{color:var(--bad)} .grade.hard{color:var(--warn)} .grade.good{color:var(--good)}
+.grade.suggest{border-width:2px;border-color:currentColor;background:color-mix(in srgb,currentColor 8%,var(--card))}
+.verdict{font-weight:600;display:flex;gap:8px;align-items:center}
+.verdict.ok{color:var(--good)} .verdict.mid{color:var(--warn)} .verdict.no{color:var(--bad)}
+.feedback{background:var(--sunk);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.thinking{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.spinner{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}.bar span{transition:none}}
+
+/* Add */
+.cands{display:flex;flex-wrap:wrap;gap:8px}
+.cand{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px;max-width:100%}
+.cand b{font:600 15.5px/1.3 var(--display)}
+.cand small{color:var(--muted);font-size:12.5px}
+.cand[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.draft{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.draft .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.warnline{font-size:13px;color:var(--warn);font-weight:500}
+.err{color:var(--bad);font-size:14px}
+.filepick{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.filepick input{position:absolute;width:1px;height:1px;opacity:0}
+.thumb{max-height:140px;border-radius:8px;border:1px solid var(--line)}
+
+/* Portfolio */
+.tools{display:flex;flex-direction:column;gap:10px}
+.searchbox{position:relative}
+.searchbox svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.searchbox .in{padding-left:36px}
+.list{display:flex;flex-direction:column;gap:10px}
+.entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:14px 18px;cursor:pointer;text-align:left;width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px}
+.entry:hover{border-color:var(--muted)}
+.entry .t{font:600 18px/1.3 var(--display);overflow-wrap:anywhere}
+.entry .a{font-size:19px;line-height:1.4;text-align:right;align-self:start}
+.entry .m{grid-column:1/-1;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.entry .meta{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.empty{padding:34px 22px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.empty h2{font:500 22px/1.3 var(--display)}
+
+/* Detail sheet */
+.overlay{position:fixed;inset:0;background:rgba(10,14,20,.45);z-index:20;display:flex;justify-content:center;align-items:flex-end}
+.sheet{background:var(--card);width:100%;max-width:720px;max-height:calc(100% - 24px - env(safe-area-inset-top,0px));overflow:auto;border-radius:14px 14px 0 0;padding:22px max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+@media (min-width:720px){.overlay{align-items:center}.sheet{border-radius:14px;max-height:88%}}
+.sheet .term{font:600 28px/1.2 var(--display);overflow-wrap:anywhere}
+.sheet .arbig{font-size:28px;line-height:1.5}
+.confirm{background:color-mix(in srgb,var(--bad) 9%,var(--card));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line));border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between;font-size:14px}
+
+/* Mic + settings */
+.field{display:flex;gap:8px;align-items:flex-start}
+.field > .in{flex:1;min-width:0}
+.micbtn{border:1px solid var(--line);background:var(--card);border-radius:8px;width:44px;height:44px;display:grid;place-items:center;cursor:pointer;color:var(--muted);flex:none}
+.micbtn:hover{color:var(--accent);border-color:var(--accent)}
+.micbtn.live{color:var(--accent-ink);background:var(--bad);border-color:var(--bad);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.65}}
+@media (prefers-reduced-motion:reduce){.micbtn.live{animation:none}}
+.setgroup{display:flex;flex-direction:column;gap:14px}
+.setgroup h3{font:500 18px/1.3 var(--display)}
+.keyline{display:flex;gap:8px;flex-wrap:wrap}
+.keyline .in{flex:1 1 240px;min-width:0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px}
+.okline{color:var(--good);font-size:14px;font-weight:500}
+.banner{border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:var(--accent-soft);border-radius:10px;padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+
+@media (max-width:520px){
+  .rcard .term{font-size:28px}
+  .hero .bignum{font-size:38px}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .kv dt{padding-top:6px}
+  .draft .grid2{grid-template-columns:minmax(0,1fr)}
+  .stat .n{font-size:22px}
+  nav.tabs button{padding:8px 9px 10px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <div class="brand">
+      <h1>Smart English <span>Portfolio</span></h1>
+      <span class="ar-ui" lang="ar">حافظة اللغة الإنجليزية الذكية</span>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <button id="tab-today" data-view="today" aria-current="page">Today</button>
+      <button id="tab-add" data-view="add">Add</button>
+      <button id="tab-portfolio" data-view="portfolio">Portfolio <span class="count" id="count">0</span></button>
+      <button id="tab-settings" data-view="settings">Settings</button>
+    </nav>
+  </div>
+</header>
+
+<div class="shell">
+  <main>
+    <section id="view-today" aria-label="Today"></section>
+    <section id="view-add" aria-label="Add an expression" hidden></section>
+    <section id="view-portfolio" aria-label="Portfolio" hidden></section>
+    <section id="view-settings" aria-label="Settings" hidden></section>
+  </main>
+</div>
+<div id="sheet-root"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+/* ---------- constants & helpers ---------- */
+const DAY = 864e5;
+const STEPS = [0, 1, 3, 7, 14, 30, 60, 120, 240];   // Leitner intervals in days per step
+const MASTER_STEP = 6;                              // 60-day interval = mastered
+let NEW_PER_DAY = 5, MAX_REVIEWS = 20;
+const SECS = { new: 40, recognize: 20, recall: 35, use: 75 };
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const marked = s => esc(s).replace(/\[\[(.+?)\]\]/g, "<mark>$1</mark>");
+const unmark = s => String(s ?? "").replace(/\[\[(.+?)\]\]/g, "$1");
+const norm = s => String(s ?? "").toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim().replace(/^to /, "");
+const sod = (t = Date.now()) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const dayKey = (t = Date.now()) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+const ICON = {
+  speak: '<svg class="i" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  mic: '<svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  search: '<svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>',
+  close: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  spark: '<svg class="i" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></svg>',
+  cam: '<svg class="i" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+};
+
+function modeOf(e) { const s = e.step || 0; return s === 0 ? "new" : s === 1 ? "recognize" : s <= 3 ? "recall" : "use"; }
+function statusOf(e) {
+  const s = e.step || 0;
+  if (s === 0) return ["New", "s-new"];
+  if (s === 1) return ["Recognize", "s-rec"];
+  if (s <= 3) return ["Recall", "s-call"];
+  if (s < MASTER_STEP) return ["Use", "s-use"];
+  return ["Mastered", "s-master"];
+}
+function pips(e) { const s = Math.min(e.step || 0, MASTER_STEP); let h = '<span class="pips" aria-label="Step ' + s + ' of ' + MASTER_STEP + '">'; for (let i = 1; i <= MASTER_STEP; i++) h += `<i class="${i <= s ? "on" : ""}"></i>`; return h + "</span>"; }
+function dueLabel(e) {
+  if (!e.step) return "Not started";
+  const d = Math.round((sod(e.due) - sod()) / DAY);
+  if (e.due <= Date.now()) return "Due now";
+  if (d <= 0) return "Due later today";
+  if (d === 1) return "Due tomorrow";
+  if (d < 30) return `Due in ${d} days`;
+  return "Due " + new Date(e.due).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
+/* ---------- speech ---------- */
+let voice = null, voiceLang = "en-GB";
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices(), L = voiceLang.toLowerCase();
+    const is = v => v.lang.replace("_", "-").toLowerCase() === L;
+    voice = vs.find(v => is(v) && /natural|google|neural|daniel|serena|samantha/i.test(v.name)) || vs.find(is) || vs.find(v => /^en/i.test(v.lang)) || null;
+  } catch (_) {}
+}
+try { speechSynthesis.onvoiceschanged = pickVoice; pickVoice(); } catch (_) {}
+const canSpeak = (() => { try { return "speechSynthesis" in window; } catch (_) { return false; } })();
+function speak(text) {
+  if (!canSpeak || !text) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(unmark(text)); if (voice) u.voice = voice; u.lang = voice?.lang || voiceLang; u.rate = .92; speechSynthesis.speak(u); } catch (_) {}
+}
+const speakBtn = (text, label = "Listen") => canSpeak ? `<button class="iconbtn" data-speak="${esc(text)}" aria-label="${label}" title="${label}">${ICON.speak}</button>` : "";
+
+/* ---------- state ---------- */
+const S = {
+  view: "today", entries: [], stats: {}, loaded: false, slow: false, dbError: null, unavailable: false, notOwner: false,
+  session: null,
+  add: { mode: "type", term: "", context: "", source: "", text: "", file: null, fileUrl: "", cands: [], picked: new Set(), drafts: [], busy: false, error: "" },
+  pf: { q: "", filter: "all", sort: "new" },
+  open: null, editing: false, confirmDel: false,
+  aiOff: false, imagesOk: false,
+};
+/* ---------- on-device storage ---------- */
+const KEY_DATA = "sep.portfolio.v1", KEY_SET = "sep.settings.v1";
+const MODELS = [["claude-sonnet-5-5", "Claude Sonnet 5.5 (recommended)"], ["claude-haiku-5-5", "Claude Haiku 5.5 (fastest, lowest cost)"], ["claude-opus-5-5", "Claude Opus 5.5 (most capable)"]];
+const DEFAULT_SETTINGS = { apiKey: "", model: "claude-sonnet-5-5", newPerDay: 5, maxReviews: 20, voice: "en-GB", micLang: "en-US", lastBackup: 0 };
+let SET = { ...DEFAULT_SETTINGS };
+let storageOk = true;
+const clampInt = (v, a, b, d) => { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.min(b, Math.max(a, n)) : d; };
+const newId = () => (window.crypto?.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+
+function loadAll() {
+  try {
+    SET = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(KEY_SET) || "{}") };
+    const raw = localStorage.getItem(KEY_DATA);
+    if (raw) { const d = JSON.parse(raw); S.entries = Array.isArray(d.entries) ? d.entries : []; S.stats = d.stats || {}; }
+    else { S.entries = seedExamples(); S.stats = {}; persist(); }
+  } catch (_) { storageOk = false; S.entries = seedExamples(); }
+  applySettings();
+}
+function persist() {
+  try { localStorage.setItem(KEY_DATA, JSON.stringify({ app: "smart-english-portfolio", version: 1, entries: S.entries, stats: S.stats })); return true; }
+  catch (e) {
+    storageOk = false;
+    toast(e?.name === "QuotaExceededError" ? "Storage is full. Export a backup, then delete some entries." : "This browser isn't saving your data (private mode?). Export a backup before closing.");
+    return false;
+  }
+}
+function saveSettings() { try { localStorage.setItem(KEY_SET, JSON.stringify(SET)); } catch (_) { toast("Settings couldn't be saved in this browser."); } applySettings(); }
+function applySettings() {
+  NEW_PER_DAY = clampInt(SET.newPerDay, 0, 30, 5);
+  MAX_REVIEWS = clampInt(SET.maxReviews, 5, 100, 20);
+  S.aiOff = !SET.apiKey;
+  voiceLang = SET.voice || "en-GB"; pickVoice();
+}
+function addEntry(doc) { S.entries.push({ id: newId(), ...doc }); persist(); onData(); }
+function updateEntry(id, patch) { const e = S.entries.find(x => x.id === id); if (!e) return; Object.assign(e, patch); persist(); onData(); }
+function deleteEntry(id) { S.entries = S.entries.filter(x => x.id !== id); persist(); onData(); }
+function setStats(st) { S.stats = st; persist(); }
+window.addEventListener("storage", ev => {   // keep two open tabs in step
+  if (ev.key !== KEY_DATA || !ev.newValue) return;
+  try { const d = JSON.parse(ev.newValue); S.entries = d.entries || []; S.stats = d.stats || {}; onData(); } catch (_) {}
+});
+function downloadFile(name, data, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+function seedExamples() {
+  const t = Date.now();
+  const base = { example: true, pos: "", source: "Example", step: 0, reps: 0, lapses: 0, lastReview: 0 };
+  return [
+    { ...base, id: "ex-move-the-needle", created: t, due: t, term: "move the needle", kind: "idiom", ipa: "/muːv ðə ˈniːdl/", meaning: "To make a noticeable, measurable difference to a situation or result.", in_context: "Make a real, visible difference to research output.", ar: "يُحدث فرقًا ملموسًا", ar_alt: "يعمل فرق حقيقي", ar_literal: "يحرّك الإبرة", register: "informal", note: "Common in business talk, often in the negative: \"this won't move the needle\". Avoid it in formal academic writing.", collocations: ["really move the needle", "won't move the needle", "move the needle on something"], examples: ["One more committee won't [[move the needle]] on graduate employability.", "Partnering with industry labs could really [[move the needle]] for our students."], context: "Small grants alone will not move the needle on research output.", context_marked: "Small grants alone will not [[move the needle]] on research output." },
+    { ...base, id: "ex-double-edged-sword", created: t + 1, due: t + 1, term: "a double-edged sword", kind: "idiom", ipa: "/ə ˌdʌbl ˈedʒd sɔːd/", meaning: "Something that has both clear advantages and serious disadvantages.", in_context: "", ar: "سلاح ذو حدّين", ar_alt: "", ar_literal: "", register: "neutral", note: "Arabic has the same image, so it transfers well. Note the article: \"is a double-edged sword\".", collocations: ["prove to be a double-edged sword", "something of a double-edged sword"], examples: ["Generative AI in the classroom is [[a double-edged sword]].", "Rapid automation can prove to be [[a double-edged sword]] for the labour market."], context: "", context_marked: "" },
+    { ...base, id: "ex-low-hanging-fruit", created: t + 2, due: t + 2, term: "low-hanging fruit", kind: "idiom", ipa: "/ˌləʊ ˌhæŋɪŋ ˈfruːt/", meaning: "The easiest tasks or goals, which bring results with little effort.", in_context: "", ar: "المكاسب السهلة", ar_alt: "الحاجات اللي في المتناول", ar_literal: "الثمار المتدلّية", register: "informal", note: "Uncountable: say \"the low-hanging fruit\", not \"fruits\". Popular in strategy meetings.", collocations: ["go for the low-hanging fruit", "pick the low-hanging fruit"], examples: ["Let's start with [[the low-hanging fruit]]: digitising the admission forms.", "Once the [[low-hanging fruit]] is gone, real reform gets harder."], context: "", context_marked: "" },
+  ];
+}
+
+/* ---------- Claude API client (direct from the browser, user's own key) ---------- */
+class AIError extends Error { constructor(code, msg) { super(msg || code); this.code = code; } }
+async function askJSON(prompt, { image = null, signal, maxTokens = 3000 } = {}) {
+  if (!SET.apiKey) throw new AIError("no_key");
+  const content = [];
+  if (image) content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: await imageToBase64(image) } });
+  content.push({ type: "text", text: prompt + "\n\nReply with the JSON only, no other text." });
+  let res;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", signal,
+      headers: { "content-type": "application/json", "x-api-key": SET.apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: SET.model || DEFAULT_SETTINGS.model, max_tokens: maxTokens, messages: [{ role: "user", content }] }),
+    });
+  } catch (e) { throw new AIError(e?.name === "AbortError" ? "cancelled" : "network"); }
+  if (!res.ok) {
+    let detail = ""; try { detail = (await res.json())?.error?.message || ""; } catch (_) {}
+    const s = res.status;
+    const code = s === 401 || s === 403 ? "auth" : s === 404 ? "model" : s === 429 ? "rate_limited" : s >= 500 ? "overloaded" : /credit|billing/i.test(detail) ? "billing" : "bad_request";
+    throw new AIError(code, detail);
+  }
+  const data = await res.json();
+  if (data.stop_reason === "refusal") throw new AIError("refused");
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
+  if (!text) throw new AIError("empty_completion");
+  return parseJSONLoose(text);
+}
+function parseJSONLoose(t) {
+  try { return JSON.parse(t); } catch (_) {}
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) { try { return JSON.parse(fence[1]); } catch (_) {} }
+  const a = t.search(/[\[{]/), b = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+  if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (_) {} }
+  throw new AIError("invalid_json");
+}
+async function imageToBase64(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => bad(new AIError("image_rejected")); i.src = url; });
+    const k = Math.min(1, 1568 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.85).split(",")[1];
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/* ---------- dictation (browser speech recognition) ---------- */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recTarget = null;
+const micBtn = id => SR ? `<button class="micbtn" type="button" data-mic="${id}" aria-label="Dictate" title="Dictate">${ICON.mic}</button>` : "";
+function toggleMic(id) {
+  if (rec) { const same = recTarget === id; try { rec.stop(); } catch (_) {} rec = null; recTarget = null; setMicUI(); if (same) return; }
+  const el = document.getElementById(id); if (!el || !SR) return;
+  const r = new SR(); r.lang = SET.micLang || "en-US"; r.interimResults = true; r.continuous = false;
+  const base = el.value ? el.value.replace(/\s*$/, " ") : "";
+  r.onresult = ev => { let t = ""; for (const x of ev.results) t += x[0].transcript; el.value = base + t; el.dispatchEvent(new Event("input", { bubbles: true })); };
+  r.onerror = ev => {
+    if (ev.error === "not-allowed" || ev.error === "service-not-allowed") toast("Microphone access is blocked. Allow it in your browser settings.");
+    else if (ev.error === "no-speech") toast("No speech heard. Tap the microphone and try again.");
+    else if (ev.error === "network") toast("Dictation needs an internet connection in this browser.");
+  };
+  r.onend = () => { if (rec === r) { rec = null; recTarget = null; setMicUI(); } };
+  rec = r; recTarget = id;
+  try { r.start(); } catch (_) { rec = null; recTarget = null; }
+  setMicUI();
+}
+function setMicUI() { document.querySelectorAll("[data-mic]").forEach(b => b.classList.toggle("live", b.dataset.mic === recTarget)); }
+let toastT;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3200); }
+
+/* ---------- AI (sample) ---------- */
+function aiErr(e) {
+  const c = e?.code;
+  if (c === "no_key") return "Add your Anthropic API key in Settings to use AI help.";
+  if (c === "cancelled") return "";
+  if (c === "auth") return "Your API key was rejected. Check it in Settings.";
+  if (c === "model") return "The AI model chosen in Settings isn't available to your key. Pick another model.";
+  if (c === "billing") return "Your Anthropic account has no remaining credit. Add credit at console.anthropic.com.";
+  if (c === "rate_limited") return "Too many AI requests right now. Wait a minute, then try again.";
+  if (c === "overloaded") return "Claude is busy right now. Try again in a moment.";
+  if (c === "network") return navigator.onLine === false
+    ? "You're offline. Connect to the internet and try again."
+    : "Couldn't reach Claude. If this page is open inside a preview or file viewer (such as the Claude app's), open it in Chrome instead, because previews block outside connections. Otherwise check for a VPN or network filter blocking api.anthropic.com.";
+  if (c === "image_rejected") return "That photo couldn't be read. Try a sharper photo or a smaller image.";
+  if (c === "refused") return "The AI couldn't work with this text. Try different wording.";
+  if (c === "invalid_json" || c === "empty_completion") return "The AI answer came back incomplete. Try again.";
+  return "Couldn't reach Claude. Try again.";
+}
+
+async function aiEnrich(items) {
+  const prompt = `You are an expert lexicographer helping an Egyptian Arabic-speaking university professor with advanced English master new English vocabulary.
+For each item below, write a dictionary entry. Reply with only a JSON array, one object per item, in the same order. Each object has exactly these fields:
+"term": the expression in its dictionary (base) form, e.g. "bite the bullet", "take something for granted";
+"kind": one of "word", "phrasal verb", "idiom", "collocation", "expression", "proverb";
+"pos": part of speech for single words (noun, verb, adjective...), otherwise "";
+"ipa": British IPA pronunciation between slashes;
+"meaning": plain-English definition, at most 18 words;
+"in_context": if a sentence is given, what it means in that sentence (at most 18 words), otherwise "";
+"ar": the most natural Modern Standard Arabic equivalent — an idiomatic Arabic equivalent where one exists, never a clumsy word-for-word rendering;
+"ar_alt": a second Arabic rendering or a common Egyptian colloquial equivalent if it helps, otherwise "";
+"ar_literal": a literal word-for-word Arabic gloss only for idioms whose literal sense differs from the meaning, otherwise "";
+"register": one of "formal", "neutral", "informal", "slang";
+"note": one practical usage tip in English (at most 22 words): nuance, a common mistake, or a trap for Arabic speakers;
+"collocations": array of up to 4 common collocations or grammar patterns;
+"examples": array of 2 natural, professional-sounding example sentences with the expression wrapped in [[ ]] exactly as it appears in the sentence;
+"context_marked": the given sentence with the expression wrapped in [[ ]] as it appears, or "" if no sentence was given.
+
+Items:
+${JSON.stringify(items.map(i => ({ expression: i.term, sentence: i.sentence || "" })))}`;
+  const out = await askJSON(prompt, { maxTokens: 1200 + items.length * 700 });
+  const arr = Array.isArray(out) ? out : (Array.isArray(out?.items) ? out.items : [out]);
+  return items.map((it, i) => cleanEntry(arr[i] || {}, it));
+}
+function cleanEntry(o, it) {
+  const str = v => (typeof v === "string" ? v.trim() : "");
+  const arr = v => (Array.isArray(v) ? v.map(x => String(x).trim()).filter(Boolean) : []);
+  return {
+    term: str(o.term) || it.term, kind: str(o.kind), pos: str(o.pos), ipa: str(o.ipa),
+    meaning: str(o.meaning), in_context: str(o.in_context),
+    ar: str(o.ar), ar_alt: str(o.ar_alt), ar_literal: str(o.ar_literal),
+    register: str(o.register), note: str(o.note),
+    collocations: arr(o.collocations).slice(0, 4), examples: arr(o.examples).slice(0, 3),
+    context: it.sentence || "", context_marked: str(o.context_marked) || (it.sentence || ""),
+    source: it.source || "",
+  };
+}
+
+async function aiExtract(text, file) {
+  const intro = file ? "The attached photo shows a page of English text." : "Here is a piece of English text.";
+  const prompt = `${intro} An Egyptian professional with advanced English is reading it and wants to build a personal vocabulary portfolio.
+Pick up to 8 words, phrasal verbs, idioms, collocations or expressions from the text that are most worth learning: less common, idiomatic, elegant or precise usage. Skip basic vocabulary, names and technical acronyms. Use the dictionary (base) form.
+Reply with only a JSON object: {"text": ${file ? "the transcribed text from the photo (at most 1200 characters)" : "\"\""}, "items": [{"term": "...", "sentence": "the full sentence from the text where it appears", "why": "at most 8 words on why it is worth learning"}]}
+${file ? "" : "\nText:\n" + text.slice(0, 6000)}`;
+  const out = await askJSON(prompt, { image: file || null, maxTokens: 2500 });
+  const items = Array.isArray(out?.items) ? out.items : [];
+  return { text: typeof out?.text === "string" ? out.text : "", items: items.filter(x => x && x.term).map(x => ({ term: String(x.term).trim(), sentence: String(x.sentence || "").trim(), why: String(x.why || "").trim() })).slice(0, 8) };
+}
+
+async function aiCheck(e, sentence, signal) {
+  const prompt = `An Arabic-speaking learner with advanced English is practising the English expression "${e.term}" (meaning: ${e.meaning || e.ar}). They wrote this sentence to use it:
+"""${sentence.slice(0, 600)}"""
+Judge whether the expression is used correctly and naturally, with its intended meaning. Be encouraging but precise.
+Reply with only a JSON object: {"verdict": "correct" | "almost" | "incorrect", "feedback": "one or two short sentences in English, at most 35 words", "corrected": "the learner's sentence with the smallest fixes needed (identical if already correct)", "model": "one natural alternative sentence using the expression, with the expression wrapped in [[ ]]"}`;
+  return askJSON(prompt, { signal, maxTokens: 700 });
+}
+
+/* ---------- rendering: nav & view switch ---------- */
+function setView(v) {
+  S.view = v;
+  for (const id of ["today", "add", "portfolio", "settings"]) {
+    $("#view-" + id).hidden = id !== v;
+    $("#tab-" + id).toggleAttribute("aria-current", id === v);
+    if (id === v) $("#tab-" + id).setAttribute("aria-current", "page");
+  }
+  build();
+  window.scrollTo(0, 0);
+}
+function build() {
+  $("#count").textContent = S.entries.length;
+  if (S.view === "today") buildToday();
+  else if (S.view === "add") buildAdd();
+  else if (S.view === "settings") buildSettings();
+  else buildPortfolio();
+}
+
+/* ---------- plan for today ---------- */
+function plan() {
+  const now = Date.now();
+  const due = S.entries.filter(e => (e.step || 0) > 0 && e.due <= now).sort((a, b) => a.due - b.due).slice(0, MAX_REVIEWS);
+  const today = dayKey();
+  const doneNew = S.stats.newDay === today ? (S.stats.newCount || 0) : 0;
+  const fresh = S.entries.filter(e => !e.step).sort((a, b) => (a.created || 0) - (b.created || 0)).slice(0, Math.max(0, NEW_PER_DAY - doneNew));
+  const queue = [...due, ...fresh];
+  const by = { new: 0, recognize: 0, recall: 0, use: 0 };
+  let secs = 0;
+  for (const e of queue) { const m = modeOf(e); by[m]++; secs += SECS[m]; }
+  return { queue, by, mins: Math.max(1, Math.round(secs / 60)) };
+}
+function stageCounts() {
+  const c = { "s-new": 0, "s-rec": 0, "s-call": 0, "s-use": 0, "s-master": 0 };
+  for (const e of S.entries) c[statusOf(e)[1]]++;
+  return c;
+}
+function streak() {
+  const st = S.stats; if (!st.lastDay) return 0;
+  const y = dayKey(Date.now() - DAY);
+  return (st.lastDay === dayKey() || st.lastDay === y) ? (st.streak || 0) : 0;
+}
+
+/* ---------- Today ---------- */
+function buildToday() {
+  const v = $("#view-today");
+  if (S.unavailable) { v.innerHTML = `<div class="card empty"><h2>Open this page in Claude</h2><p class="muted">Your portfolio is stored with your Claude account, so it only loads inside Claude on the web or in the app.</p></div>`; return; }
+  if (S.notOwner) { v.innerHTML = `<div class="card empty"><h2>This portfolio is private</h2><p class="muted">Only its owner can open and practise these expressions.</p></div>`; return; }
+  if (S.session) { renderSession(); return; }
+  if (!S.loaded) {
+    v.innerHTML = `<div class="card hero"><div class="thinking"><span class="spinner"></span>${S.slow ? "Your portfolio is taking longer than usual to load. Check your connection." : "Loading your portfolio…"}</div></div>`;
+    return;
+  }
+  if (S.dbError) { v.innerHTML = `<div class="card empty"><h2>Your portfolio couldn't load</h2><p class="muted">Reload the page to try again.</p></div>`; return; }
+
+  const p = plan(), c = stageCounts(), total = S.entries.length;
+  const dateStr = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  let hero;
+  if (!total) {
+    hero = `<div class="card empty">
+      <span class="eyebrow">${esc(dateStr)}</span>
+      <h2>Your portfolio is empty</h2>
+      <p class="muted" style="max-width:46ch">Add the first word, phrase or expression you met today. The AI fills in the Arabic equivalent and examples, and the portfolio brings it back for practice at the right time.</p>
+      <button class="btn primary big" data-go="add">Add an expression</button></div>`;
+  } else if (p.queue.length) {
+    const parts = [];
+    if (p.by.new) parts.push(`${p.by.new} new`);
+    if (p.by.recognize) parts.push(`${p.by.recognize} to recognize`);
+    if (p.by.recall) parts.push(`${p.by.recall} to recall`);
+    if (p.by.use) parts.push(`${p.by.use} to use in a sentence`);
+    hero = `<div class="card hero">
+      <span class="eyebrow">${esc(dateStr)}</span>
+      <div class="row" style="align-items:flex-end;gap:14px"><span class="bignum">${p.queue.length}</span><h2>${p.queue.length === 1 ? "expression" : "expressions"} to practise · about ${p.mins} min</h2></div>
+      <p class="muted">${esc(parts.join(" · "))}</p>
+      <div><button class="btn primary big" id="start">Start today's practice</button></div></div>`;
+  } else {
+    const next = S.entries.filter(e => e.step).sort((a, b) => a.due - b.due)[0];
+    const nextTxt = next ? dueLabel(next).replace("Due", "Next review:").replace("Next review: in", "Next review in") : "";
+    hero = `<div class="card hero">
+      <span class="eyebrow">${esc(dateStr)}</span>
+      <h2>You're done for today.</h2>
+      <p class="muted">${esc(nextTxt)}${nextTxt ? ". " : ""}Add new expressions as you meet them; up to ${NEW_PER_DAY} new ones join your practice each day.</p>
+      <div class="row"><button class="btn" data-go="add">Add an expression</button></div></div>`;
+  }
+
+  const seg = (cls, label, color) => `<span class="${cls}" style="width:${total ? (c[cls] / total) * 100 : 0}%;background:var(${color})" title="${label}: ${c[cls]}"></span>`;
+  const leg = (label, color, n) => `<span><span class="dot" style="background:var(${color})"></span>${label} <b>${n}</b></span>`;
+  const ladder = total ? `<div class="card pad stack">
+      <div class="row between"><span class="eyebrow">Path to mastery</span><span class="small muted">New → Recognize → Recall → Use → Mastered</span></div>
+      <div class="ladder" role="img" aria-label="Expressions by stage">${seg("s-new", "New", "--st-new")}${seg("s-rec", "Recognize", "--st-rec")}${seg("s-call", "Recall", "--st-call")}${seg("s-use", "Use", "--st-use")}${seg("s-master", "Mastered", "--st-master")}</div>
+      <div class="legend">${leg("New", "--st-new", c["s-new"])}${leg("Recognize", "--st-rec", c["s-rec"])}${leg("Recall", "--st-call", c["s-call"])}${leg("Use", "--st-use", c["s-use"])}${leg("Mastered", "--st-master", c["s-master"])}</div>
+    </div>` : "";
+  const stats = total ? `<div class="stats">
+      <div class="card stat"><span class="n">${total}</span><span class="l">Expressions</span></div>
+      <div class="card stat"><span class="n">${c["s-master"]}</span><span class="l">Mastered</span></div>
+      <div class="card stat"><span class="n">${streak()}</span><span class="l">Day streak</span></div></div>` : "";
+  const exN = S.entries.filter(e => e.example).length;
+  const exNote = exN ? `<div class="notice"><span>${plural(exN, "example expression")} ${exN === 1 ? "is" : "are"} included so you can try the practice flow.</span><button class="btn" id="rm-examples">Remove examples</button></div>` : "";
+  const keyNote = S.aiOff ? `<div class="banner"><span>Add your Anthropic API key to turn on AI help: Arabic equivalents, finding expressions and checking your sentences.</span><button class="btn" data-go="settings">Open Settings</button></div>` : "";
+  const storeNote = !storageOk ? `<div class="banner"><span>This browser isn't keeping your data. Export a backup from Settings before you close it.</span></div>` : "";
+  v.innerHTML = keyNote + storeNote + hero + ladder + stats + exNote;
+}
+
+/* ---------- Review session ---------- */
+function startSession() {
+  const p = plan();
+  if (!p.queue.length) return;
+  S.session = { queue: p.queue.map(e => e.id), i: 0, done: 0, again: 0, requeued: new Set(), phase: "front", answer: "", recallResult: null, check: null, busy: false, err: "", ctl: null, finished: false, mastered: [] };
+  renderSession();
+  window.scrollTo(0, 0);
+}
+function cur() { const s = S.session; return s && S.entries.find(e => e.id === s.queue[s.i]); }
+
+function gradeHints(e) {
+  const s = e.step || 0;
+  const goodD = STEPS[Math.min(s + 1, STEPS.length - 1)];
+  const hardD = Math.max(1, Math.round(STEPS[s] / 2));
+  const d = n => n === 1 ? "1 day" : n < 30 ? `${n} days` : n < 60 ? "1 month" : `${Math.round(n / 30)} months`;
+  return { again: "again soon", hard: d(hardD), good: d(goodD) };
+}
+function gradeButtons(e, suggest) {
+  const h = gradeHints(e);
+  const b = (g, label) => `<button class="grade ${g}${suggest === g ? " suggest" : ""}" data-grade="${g}">${label}<small>${h[g]}</small></button>`;
+  return `<div class="grades">${b("again", "Again")}${b("hard", "Hard")}${b("good", "Good")}</div>`;
+}
+function arabicBlock(e, size = "arbig") {
+  return `<div class="stack" style="gap:4px">
+    <div class="ar ${size}" lang="ar">${esc(e.ar || "—")}</div>
+    ${e.ar_alt ? `<div class="ar-ui muted" lang="ar" style="font-size:15px">${esc(e.ar_alt)}</div>` : ""}
+    ${e.ar_literal ? `<div class="small muted">Literally: <span class="ar-ui" lang="ar">${esc(e.ar_literal)}</span></div>` : ""}</div>`;
+}
+function metaTags(e) {
+  return [e.kind, e.pos, e.register].filter(Boolean).map(t => `<span class="tag">${esc(t)}</span>`).join("");
+}
+function detailsList(e) {
+  const rows = [];
+  if (e.meaning) rows.push(["Meaning", esc(e.meaning)]);
+  if (e.context_marked || e.context) rows.push(["Where I met it", `<span class="sentence plain">${marked(e.context_marked || e.context)}</span>${e.in_context ? `<div class="small muted" style="margin-top:4px">Here: ${esc(e.in_context)}</div>` : ""}${e.source ? `<div class="small muted">Source: ${esc(e.source)}</div>` : ""}`]);
+  else if (e.source) rows.push(["Source", esc(e.source)]);
+  if (e.examples?.length) rows.push(["Examples", `<ul class="ex-list">${e.examples.map(x => `<li>${marked(x)}</li>`).join("")}</ul>`]);
+  if (e.collocations?.length) rows.push(["Patterns", e.collocations.map(esc).join(" · ")]);
+  if (e.note) rows.push(["Tip", esc(e.note)]);
+  return `<dl class="kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
+}
+
+function renderSession() {
+  const v = $("#view-today"), s = S.session;
+  if (s.finished) {
+    v.innerHTML = `<div class="card empty">
+      <span class="eyebrow">Practice complete</span>
+      <h2>${plural(s.done, "review")} done${s.again ? `, ${s.again} to revisit` : ""}</h2>
+      ${s.mastered.length ? `<p>Mastered today: ${s.mastered.map(t => `<mark>${esc(t)}</mark>`).join(", ")}</p>` : ""}
+      <p class="muted">Day streak: ${streak()}. The portfolio has scheduled each expression for its next review.</p>
+      <div class="row" style="justify-content:center"><button class="btn primary" id="end-session">Back to Today</button><button class="btn" data-go="add">Add an expression</button></div></div>`;
+    return;
+  }
+  const e = cur();
+  if (!e) { nextCard(); return; }
+  const m = modeOf(e), total = s.queue.length;
+  const top = `<div class="progress"><span class="small muted" style="font-variant-numeric:tabular-nums">${s.i + 1} / ${total}</span><div class="bar"><span style="width:${(s.i / total) * 100}%"></span></div><button class="btn ghost" id="end-session">End</button></div>`;
+  const head = (label) => `<div class="row between"><span class="eyebrow">${label}</span><span class="row" style="gap:6px">${e.example ? '<span class="tag ex">Example</span>' : ""}<span class="chip ${statusOf(e)[1]}">${statusOf(e)[0]}</span></span></div>`;
+  const termLine = `<div class="row" style="align-items:flex-start;flex-wrap:nowrap"><div class="stack" style="gap:4px;min-width:0;flex:1"><div class="term">${esc(e.term)}</div>${e.ipa ? `<div class="ipa">${esc(e.ipa)}</div>` : ""}</div>${speakBtn(e.term, "Hear the pronunciation")}</div>`;
+  const firstSentence = e.context_marked || e.context || e.examples?.[0] || "";
+  let body = "";
+
+  if (m === "new") {
+    body = `${head("New expression · meet it")}
+      ${termLine}<div class="row" style="gap:6px">${metaTags(e)}</div>
+      ${arabicBlock(e)}
+      <div class="divider"></div>${detailsList(e)}
+      <button class="btn primary big" data-grade="good">Got it, start learning</button>`;
+  } else if (m === "recognize") {
+    body = `${head("Do you know what it means?")}${termLine}
+      ${firstSentence ? `<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><p class="sentence" style="flex:1">${marked(firstSentence)}</p>${speakBtn(firstSentence, "Hear the sentence")}</div>` : ""}
+      ${s.phase === "front"
+        ? `<button class="btn primary big" id="reveal">Show the meaning</button>`
+        : `<div class="divider"></div>${arabicBlock(e)}<p>${esc(e.in_context || e.meaning)}</p>${e.note ? `<p class="small muted">${esc(e.note)}</p>` : ""}
+           <p class="small muted">How well did you know it?</p>${gradeButtons(e)}`}`;
+  } else if (m === "recall") {
+    const blank = esc(unmark(firstSentence) === firstSentence ? "" : firstSentence).replace(/\[\[(.+?)\]\]/g, '<span class="blank">____</span>');
+    const r = s.recallResult;
+    body = `${head("Say it in English")}
+      ${arabicBlock(e)}
+      <p class="muted">${esc(e.in_context || e.meaning)}</p>
+      ${blank ? `<p class="sentence">${blank}</p>` : ""}
+      ${s.phase === "front"
+        ? `<label class="f" for="recall-in">Type the English expression<span class="field"><input class="in term" id="recall-in" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(s.answer)}">${micBtn("recall-in")}</span></label>
+           <div class="row"><button class="btn primary" id="recall-check">Check</button><button class="btn ghost" id="reveal">Show the answer</button></div>`
+        : `<div class="divider"></div>
+           ${r ? `<div class="verdict ${r.cls}">${r.label}${s.answer ? ` <span class="muted" style="font-weight:400">· you wrote “${esc(s.answer)}”</span>` : ""}</div>` : ""}
+           ${termLine}
+           ${firstSentence ? `<p class="sentence">${marked(firstSentence)}</p>` : ""}
+           ${gradeButtons(e, r?.suggest)}`}`;
+  } else {
+    const c = s.check;
+    body = `${head("Use it in your own sentence")}${termLine}
+      <div class="ar-ui" lang="ar" style="font-size:19px">${esc(e.ar)}</div>
+      <p class="muted">${esc(e.meaning)}</p>
+      ${s.phase === "front"
+        ? `<label class="f" for="use-in">Write a sentence that uses <b style="color:var(--ink)">${esc(e.term)}</b><span class="field"><textarea class="in" id="use-in" rows="3" placeholder="Type or dictate your sentence">${esc(s.answer)}</textarea>${micBtn("use-in")}</span></label>
+           ${s.busy ? `<div class="thinking"><span class="spinner"></span>Checking your sentence… <button class="btn ghost" id="stop-check">Stop</button></div>`
+                    : `<div class="row">${S.aiOff ? "" : `<button class="btn primary" id="use-check">Check my sentence</button>`}<button class="btn ${S.aiOff ? "primary" : "ghost"}" id="reveal">${S.aiOff ? "Show a model sentence" : "Skip the check"}</button></div>`}
+           ${s.err ? `<p class="err">${esc(s.err)}</p>` : ""}`
+        : `<div class="divider"></div>
+           ${c ? `<div class="verdict ${c.verdict === "correct" ? "ok" : c.verdict === "almost" ? "mid" : "no"}">${c.verdict === "correct" ? "Correct and natural" : c.verdict === "almost" ? "Almost there" : "Not quite"}</div>
+           <div class="feedback"><p>${esc(c.feedback)}</p>
+             ${c.corrected && norm(c.corrected) !== norm(s.answer) ? `<p><span class="eyebrow">Corrected</span><br>${esc(c.corrected)}</p>` : ""}
+             ${c.model ? `<p><span class="eyebrow">Another way to say it</span><br>${marked(c.model)}</p>` : ""}</div>`
+             : `${s.answer ? `<p class="small muted">Your sentence: ${esc(s.answer)}</p>` : ""}${e.examples?.length ? `<div class="feedback"><span class="eyebrow">Model sentences</span>${e.examples.map(x => `<p>${marked(x)}</p>`).join("")}</div>` : ""}<p class="small muted">Compare and grade yourself.</p>`}
+           ${gradeButtons(e, c ? (c.verdict === "correct" ? "good" : c.verdict === "almost" ? "hard" : "again") : null)}`}`;
+  }
+  v.innerHTML = top + `<div class="card rcard">${body}</div>`;
+  const focusEl = $("#recall-in") || $("#use-in");
+  if (focusEl && matchMedia("(pointer:fine)").matches) focusEl.focus();
+}
+
+function lev(a, b) {
+  const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) { const curr = [i]; for (let j = 1; j <= n; j++) curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = curr; }
+  return prev[n];
+}
+function judgeRecall(ans, e) {
+  const a = norm(ans), t = norm(e.term).replace(/\b(something|someone|sth|sb|one's)\b/g, "").replace(/\s+/g, " ").trim();
+  const full = norm(e.term);
+  if (!a) return { label: "Answer shown", cls: "", suggest: null };
+  const d = Math.min(lev(a, full), lev(a, t));
+  if (d === 0) return { label: "Correct", cls: "ok", suggest: "good" };
+  if (d <= Math.max(1, Math.floor(full.length * 0.15))) return { label: "Almost — check the spelling", cls: "mid", suggest: "hard" };
+  const words = t.split(" ").filter(w => w.length > 2), hit = words.filter(w => a.includes(w)).length;
+  if (words.length && hit / words.length >= .5) return { label: "Close", cls: "mid", suggest: "hard" };
+  return { label: "Not quite", cls: "no", suggest: "again" };
+}
+
+async function grade(g) {
+  const s = S.session, e = cur(); if (!e || s.busy) return;
+  const now = Date.now(); let step = e.step || 0, due, lapses = e.lapses || 0;
+  const wasNew = step === 0;
+  if (wasNew) { step = 1; due = sod() + DAY; }
+  else if (g === "good") { step = Math.min(step + 1, STEPS.length - 1); due = sod() + STEPS[step] * DAY; }
+  else if (g === "hard") { due = sod() + Math.max(1, Math.round(STEPS[step] / 2)) * DAY; }
+  else {
+    step = Math.max(1, step - 1); due = now + 10 * 60 * 1000; lapses++; s.again++;
+    if (!s.requeued.has(e.id)) { s.requeued.add(e.id); s.queue.push(e.id); }
+  }
+  if (step >= MASTER_STEP && (e.step || 0) < MASTER_STEP) { s.mastered.push(e.term); toast(`Mastered: ${e.term}`); }
+  const patch = { step, due, lapses, reps: (e.reps || 0) + 1, lastReview: now };
+  Object.assign(e, patch); // optimistic
+  const id = e.id;
+  updateEntry(id, patch);
+
+  // stats: streak, daily new count
+  const today = dayKey(), st = { ...S.stats };
+  if (st.lastDay !== today) { st.streak = st.lastDay === dayKey(now - DAY) ? (st.streak || 0) + 1 : 1; st.lastDay = today; }
+  st.best = Math.max(st.best || 0, st.streak || 0);
+  if (wasNew) { st.newCount = st.newDay === today ? (st.newCount || 0) + 1 : 1; st.newDay = today; }
+  st.totalReviews = (st.totalReviews || 0) + 1;
+  S.stats = st;
+  setStats(st);
+
+  s.done++;
+  nextCard();
+}
+function nextCard() {
+  const s = S.session;
+  s.i++; s.phase = "front"; s.answer = ""; s.recallResult = null; s.check = null; s.err = ""; s.busy = false;
+  if (s.i >= s.queue.length) s.finished = true;
+  renderSession();
+  window.scrollTo(0, 0);
+}
+
+async function runUseCheck() {
+  const s = S.session, e = cur();
+  const txt = ($("#use-in")?.value || "").trim(); s.answer = txt;
+  if (!txt) { s.err = "Write a sentence first."; renderSession(); return; }
+  if (S.aiOff) { s.phase = "back"; renderSession(); return; }
+  s.busy = true; s.err = ""; s.ctl = new AbortController(); renderSession();
+  try {
+    const r = await aiCheck(e, txt, s.ctl.signal);
+    if (S.session !== s || cur()?.id !== e.id) return;
+    s.check = { verdict: ["correct", "almost", "incorrect"].includes(r?.verdict) ? r.verdict : "almost", feedback: String(r?.feedback || ""), corrected: String(r?.corrected || ""), model: String(r?.model || "") };
+    s.phase = "back";
+  } catch (err) { s.err = aiErr(err); }
+  s.busy = false; if (S.session === s) renderSession();
+}
+
+/* ---------- Add ---------- */
+function buildAdd() {
+  const v = $("#view-add"), a = S.add;
+  if (S.unavailable || S.notOwner) { v.innerHTML = `<div class="card empty"><h2>${S.notOwner ? "This portfolio is private" : "Open this page in Claude"}</h2></div>`; return; }
+  const modes = [["type", "Type it"], ["sentence", "From a sentence"]];
+  if (S.imagesOk) modes.push(["photo", "From a photo"]);
+  let panel = "";
+  if (a.mode === "type") {
+    panel = `<label class="f" for="a-term">Word, phrase or expression<span class="field"><input class="in term" id="a-term" autocomplete="off" placeholder="e.g. move the needle" value="${esc(a.term)}">${micBtn("a-term")}</span></label>
+      <label class="f" for="a-context">Where I met it <span class="muted" style="font-weight:400">(optional — the sentence it came in)</span><span class="field"><textarea class="in" id="a-context" rows="2" placeholder="Paste or dictate the sentence">${esc(a.context)}</textarea>${micBtn("a-context")}</span></label>
+      <label class="f" for="a-source">Source <span class="muted" style="font-weight:400">(optional)</span><input class="in" id="a-source" placeholder="Book, talk, article, meeting…" value="${esc(a.source)}"></label>
+      <div class="row">${S.aiOff ? "" : `<button class="btn primary" id="a-prepare" ${a.busy ? "disabled" : ""}>${ICON.spark} Prepare entry</button>`}<button class="btn ${S.aiOff ? "primary" : "ghost"}" id="a-manual">Fill it in myself</button></div>`;
+  } else if (a.mode === "sentence") {
+    panel = `<label class="f" for="a-text">Sentence or paragraph<span class="field"><textarea class="in" id="a-text" rows="4" placeholder="Paste or dictate the text you were reading or heard">${esc(a.text)}</textarea>${micBtn("a-text")}</span></label>
+      <label class="f" for="a-source">Source <span class="muted" style="font-weight:400">(optional)</span><input class="in" id="a-source" placeholder="Book, talk, article, meeting…" value="${esc(a.source)}"></label>
+      <div class="row"><button class="btn primary" id="a-find" ${a.busy || S.aiOff ? "disabled" : ""}>${ICON.spark} Find expressions</button></div>
+      ${S.aiOff ? `<p class="small muted">Finding expressions needs AI help. Use “Type it” to add one yourself.</p>` : ""}`;
+  } else {
+    panel = `<div class="filepick"><label class="btn" for="a-file">${ICON.cam} ${a.file ? "Choose another photo" : "Take or choose a photo"}</label><input type="file" id="a-file" accept="image/*" capture="environment">${a.fileUrl ? `<img class="thumb" src="${a.fileUrl}" alt="Selected photo">` : ""}</div>
+      <label class="f" for="a-source">Source <span class="muted" style="font-weight:400">(optional)</span><input class="in" id="a-source" placeholder="Book, report, slide…" value="${esc(a.source)}"></label>
+      <div class="row"><button class="btn primary" id="a-find" ${!a.file || a.busy || S.aiOff ? "disabled" : ""}>${ICON.spark} Find expressions</button></div>`;
+  }
+  const cands = a.cands.length ? `<div class="stack"><span class="eyebrow">Pick what you want to learn</span>
+      <div class="cands">${a.cands.map((c, i) => `<button class="cand" data-cand="${i}" aria-pressed="${a.picked.has(i)}"><b>${esc(c.term)}</b>${c.why ? `<small>${esc(c.why)}</small>` : ""}</button>`).join("")}</div>
+      <div class="row"><button class="btn primary" id="a-prep-picked" ${!a.picked.size || a.busy ? "disabled" : ""}>Prepare ${a.picked.size || ""} selected</button></div></div>` : "";
+
+  v.innerHTML = `<div class="card pad stack" style="gap:16px">
+      <div class="row between"><h2 style="font:500 21px/1.3 var(--display)">Add to your portfolio</h2></div>
+      <div class="seg" role="group" aria-label="How to add">${modes.map(([k, l]) => `<button data-amode="${k}" aria-pressed="${a.mode === k}">${l}</button>`).join("")}</div>
+      ${panel}
+      <p class="hint">${ICON.mic}<span>${SR ? "Tap the microphone beside a box to dictate in English. Tap it again to stop." : "To speak instead of typing, use the microphone on your phone's keyboard, or dictation on your computer."}</span></p>
+      ${a.busy ? `<div class="thinking"><span class="spinner"></span>${esc(a.busyMsg || "Working…")}</div>` : ""}
+      ${a.error ? `<p class="err">${esc(a.error)}</p>` : ""}
+      ${cands}
+    </div>
+    <div id="drafts" class="stack" style="gap:14px">${renderDrafts()}</div>`;
+}
+function renderDrafts() {
+  const d = S.add.drafts; if (!d.length) return "";
+  const existing = new Set(S.entries.map(e => norm(e.term)));
+  return `<div class="row between"><span class="eyebrow">Ready to save · check the Arabic and edit anything</span>${d.length > 1 ? `<button class="btn primary" id="save-all">Save all ${d.length}</button>` : ""}</div>` +
+    d.map((x, i) => `<div class="card draft" data-draft="${i}">
+      <div class="grid2">
+        <label class="f" for="d-term-${i}">English<input class="in term" id="d-term-${i}" data-dfield="term" value="${esc(x.term)}"></label>
+        <label class="f" for="d-ar-${i}">Arabic equivalent<input class="in ar" id="d-ar-${i}" dir="rtl" lang="ar" data-dfield="ar" value="${esc(x.ar)}"></label>
+      </div>
+      <label class="f" for="d-meaning-${i}">Meaning<input class="in" id="d-meaning-${i}" data-dfield="meaning" value="${esc(x.meaning)}"></label>
+      ${x.manual ? `<label class="f" for="d-ex-${i}">An example sentence <span class="muted" style="font-weight:400">(optional)</span><input class="in" id="d-ex-${i}" data-dfield="example1" value="${esc(x.examples?.[0] || "")}"></label>` : ""}
+      ${existing.has(norm(x.term)) ? `<p class="warnline">This is already in your portfolio.</p>` : ""}
+      ${!x.manual ? `<div class="row" style="gap:6px">${x.ipa ? `<span class="ipa">${esc(x.ipa)}</span>` : ""}${metaTags(x)}${speakBtn(x.term)}</div>
+        ${x.ar_alt || x.ar_literal ? `<div class="small muted">${x.ar_alt ? `Also: <span class="ar-ui" lang="ar">${esc(x.ar_alt)}</span>` : ""}${x.ar_alt && x.ar_literal ? " · " : ""}${x.ar_literal ? `Literally: <span class="ar-ui" lang="ar">${esc(x.ar_literal)}</span>` : ""}</div>` : ""}
+        ${detailsList({ ...x, meaning: "" })}` : ""}
+      <div class="row"><button class="btn primary" data-dsave="${i}">Save to portfolio</button><button class="btn ghost" data-ddiscard="${i}">Discard</button></div>
+    </div>`).join("");
+}
+
+async function prepare(items) {
+  const a = S.add;
+  if (S.aiOff) { a.drafts.push(...items.map(i => manualDraft(i))); buildAdd(); return; }
+  a.busy = true; a.error = ""; a.busyMsg = items.length > 1 ? `Preparing ${items.length} entries with Arabic equivalents…` : "Preparing the entry with its Arabic equivalent…"; buildAdd();
+  try {
+    const out = await aiEnrich(items);
+    a.drafts.push(...out);
+    if (a.mode === "type") { a.term = ""; a.context = ""; }
+    else { a.cands = a.cands.filter((_, i) => !a.picked.has(i)); a.picked = new Set(); }
+  } catch (e) { a.error = aiErr(e); if (S.aiOff) a.drafts.push(...items.map(i => manualDraft(i))); }
+  a.busy = false; buildAdd();
+  const first = $("#drafts .draft"); if (first) first.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+function manualDraft(i = {}) {
+  return { manual: true, term: i.term || "", ar: "", meaning: "", examples: [], collocations: [], context: i.sentence || "", context_marked: i.sentence || "", source: i.source || S.add.source || "", kind: "", pos: "", ipa: "", register: "", note: "", ar_alt: "", ar_literal: "", in_context: "" };
+}
+async function findExpressions() {
+  const a = S.add;
+  if (a.mode === "sentence" && !a.text.trim()) { a.error = "Paste or dictate some text first."; buildAdd(); return; }
+  a.busy = true; a.error = ""; a.cands = []; a.picked = new Set(); a.busyMsg = a.mode === "photo" ? "Reading the photo…" : "Looking for expressions worth learning…"; buildAdd();
+  try {
+    const r = await aiExtract(a.text, a.mode === "photo" ? a.file : null);
+    a.cands = r.items;
+    if (!r.items.length) a.error = "No expressions stood out. Try a longer passage, or add one with “Type it”.";
+    if (r.items.length === 1) a.picked = new Set([0]);
+  } catch (e) { a.error = aiErr(e); }
+  a.busy = false; buildAdd();
+}
+function readDraftInputs(i) {
+  const card = $(`.draft[data-draft="${i}"]`), x = S.add.drafts[i]; if (!card) return x;
+  card.querySelectorAll("[data-dfield]").forEach(inp => {
+    const f = inp.dataset.dfield, val = inp.value.trim();
+    if (f === "example1") x.examples = val ? [val] : []; else x[f] = val;
+  });
+  return x;
+}
+async function saveDraft(i, quiet) {
+  const x = readDraftInputs(i);
+  if (!x.term) { toast("Add the English expression first."); return false; }
+  const now = Date.now();
+  const doc = { ...x, created: now, step: 0, due: now, reps: 0, lapses: 0, lastReview: 0 };
+  delete doc.manual;
+  addEntry(doc);
+  if (!quiet) toast(`Saved: ${x.term}`);
+  return true;
+}
+
+/* ---------- Portfolio ---------- */
+function buildPortfolio() {
+  const v = $("#view-portfolio"), f = S.pf;
+  if (S.unavailable || S.notOwner) { v.innerHTML = `<div class="card empty"><h2>${S.notOwner ? "This portfolio is private" : "Open this page in Claude"}</h2></div>`; return; }
+  const filters = [["all", "All"], ["due", "Due"], ["new", "New"], ["learning", "Learning"], ["mastered", "Mastered"]];
+  v.innerHTML = `<div class="tools">
+      <div class="searchbox">${ICON.search}<input class="in" id="pf-q" type="search" placeholder="Search English or Arabic" value="${esc(f.q)}" autocomplete="off"></div>
+      <div class="row between">
+        <div class="seg" role="group" aria-label="Filter">${filters.map(([k, l]) => `<button data-filter="${k}" aria-pressed="${f.filter === k}">${l}</button>`).join("")}</div>
+        <div class="row" style="gap:8px">
+          <select class="in" id="pf-sort" style="width:auto;padding:7px 10px;font-size:14px" aria-label="Sort">
+            <option value="new" ${f.sort === "new" ? "selected" : ""}>Newest first</option>
+            <option value="az" ${f.sort === "az" ? "selected" : ""}>A to Z</option>
+            <option value="due" ${f.sort === "due" ? "selected" : ""}>Next due</option>
+          </select>
+          ${S.entries.length ? `<button class="btn" id="pf-export">Export CSV</button>` : ""}
+        </div>
+      </div></div>
+    <div class="list" id="pf-list"></div>`;
+  renderList();
+}
+function renderList() {
+  const box = $("#pf-list"); if (!box) return;
+  if (!S.loaded) { box.innerHTML = `<div class="thinking"><span class="spinner"></span>Loading…</div>`; return; }
+  const f = S.pf, q = f.q.trim().toLowerCase(), now = Date.now();
+  let list = S.entries.filter(e => {
+    if (q && !(`${e.term} ${e.ar} ${e.ar_alt} ${e.meaning}`.toLowerCase().includes(q))) return false;
+    const s = e.step || 0;
+    if (f.filter === "due") return s > 0 && e.due <= now;
+    if (f.filter === "new") return s === 0;
+    if (f.filter === "learning") return s > 0 && s < MASTER_STEP;
+    if (f.filter === "mastered") return s >= MASTER_STEP;
+    return true;
+  });
+  list.sort(f.sort === "az" ? (a, b) => a.term.localeCompare(b.term) : f.sort === "due" ? (a, b) => ((a.step ? a.due : 9e15) - (b.step ? b.due : 9e15)) : (a, b) => (b.created || 0) - (a.created || 0));
+  if (!S.entries.length) { box.innerHTML = `<div class="card empty"><h2>Nothing here yet</h2><p class="muted">Expressions you add appear here with their Arabic equivalents.</p><button class="btn primary" data-go="add">Add an expression</button></div>`; return; }
+  if (!list.length) { box.innerHTML = `<p class="muted" style="padding:12px 2px">No expressions match. Try another search or filter.</p>`; return; }
+  box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<button class="entry" data-open="${e.id}">
+      <span class="t">${esc(e.term)}</span><span class="a ar" lang="ar">${esc(e.ar)}</span>
+      ${e.meaning ? `<span class="m">${esc(e.meaning)}</span>` : ""}
+      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("");
+}
+
+/* ---------- Detail sheet ---------- */
+function openDetail(id) { S.open = id; S.editing = false; S.confirmDel = false; renderSheet(); }
+function closeDetail() { S.open = null; $("#sheet-root").innerHTML = ""; document.body.style.overflow = ""; }
+function renderSheet() {
+  const root = $("#sheet-root"), e = S.entries.find(x => x.id === S.open);
+  if (!e) { closeDetail(); return; }
+  document.body.style.overflow = "hidden";
+  const [l, c] = statusOf(e);
+  const fld = (k, label, opts = "") => `<label class="f" for="e-${k}">${label}${k === "context" || k === "note" ? `<textarea class="in" id="e-${k}" rows="2" ${opts}>${esc(k === "context" ? unmark(e.context_marked || e.context) : e[k])}</textarea>` : `<input class="in${k === "term" ? " term" : ""}${k === "ar" ? " ar" : ""}" id="e-${k}" ${opts} value="${esc(e[k])}">`}</label>`;
+  root.innerHTML = `<div class="overlay" id="overlay"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(e.term)}">
+    <div class="row between" style="flex-wrap:nowrap;align-items:flex-start">
+      <div class="row" style="gap:8px"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span></div>
+      <button class="iconbtn" id="sheet-close" aria-label="Close">${ICON.close}</button></div>
+    ${S.editing ? `<div class="stack">
+        ${fld("term", "English")}${fld("ar", "Arabic equivalent", 'dir="rtl" lang="ar"')}${fld("ar_alt", "Other Arabic rendering", 'dir="rtl" lang="ar"')}
+        ${fld("meaning", "Meaning")}${fld("context", "Where I met it")}${fld("source", "Source")}${fld("note", "Tip")}
+        <div class="row"><button class="btn primary" id="edit-save">Save changes</button><button class="btn ghost" id="edit-cancel">Cancel</button></div></div>`
+    : `<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="stack" style="gap:4px;flex:1;min-width:0"><div class="term">${esc(e.term)}</div>${e.ipa ? `<div class="ipa">${esc(e.ipa)}</div>` : ""}</div>${speakBtn(e.term)}</div>
+       <div class="row" style="gap:6px">${metaTags(e)}${e.example ? '<span class="tag ex">Example</span>' : ""}</div>
+       ${arabicBlock(e)}
+       <div class="divider"></div>${detailsList(e)}
+       <p class="small muted">Added ${new Date(e.created || Date.now()).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })} · reviewed ${plural(e.reps || 0, "time")}${e.lapses ? ` · forgot ${plural(e.lapses, "time")}` : ""}</p>
+       ${S.confirmDel ? `<div class="confirm"><span>Delete “${esc(e.term)}” from your portfolio? This can't be undone.</span><span class="row"><button class="btn danger" id="del-yes">Delete</button><button class="btn ghost" id="del-no">Keep it</button></span></div>`
+       : `<div class="row"><button class="btn" id="edit-start">Edit</button>${e.step ? `<button class="btn ghost" id="reset">Start over</button>` : ""}<button class="btn ghost danger" id="del">Delete</button></div>`}`}
+  </div></div>`;
+}
+
+/* ---------- export ---------- */
+async function exportCsv() {
+  const cols = ["term", "ar", "ar_alt", "meaning", "kind", "register", "context", "source", "status", "next_review"];
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = S.entries.map(e => [e.term, e.ar, e.ar_alt, e.meaning, e.kind, e.register, unmark(e.context_marked || e.context), e.source, statusOf(e)[0], e.step ? new Date(e.due).toISOString().slice(0, 10) : ""].map(q).join(","));
+  const data = "﻿" + [cols.join(","), ...rows].join("\r\n");
+  downloadFile(`english-portfolio-${dayKey()}.csv`, data, "text/csv;charset=utf-8");
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async ev => {
+  const t = ev.target.closest("button, [data-go], label[for='a-file']"); if (!t) {
+    if (ev.target.id === "overlay") closeDetail();
+    return;
+  }
+  if ((t.dataset.view || t.dataset.go) && rec) { try { rec.stop(); } catch (_) {} }
+  if (t.dataset.view) { if (S.session && !S.session.finished && t.dataset.view !== "today") { S.session.ctl?.abort(); S.session = null; } setView(t.dataset.view); return; }
+  if (t.dataset.go) { S.session = null; setView(t.dataset.go); return; }
+  if (t.dataset.speak !== undefined) { speak(t.dataset.speak); return; }
+  if (t.dataset.mic) { toggleMic(t.dataset.mic); return; }
+  const id = t.id;
+
+  // Today / session
+  if (id === "start") return startSession();
+  if (id === "end-session") { S.session?.ctl?.abort(); S.session = null; buildToday(); return; }
+  if (id === "rm-examples") {
+    t.disabled = true;
+    S.entries = S.entries.filter(x => !x.example); persist(); onData();
+    toast("Examples removed"); return;
+  }
+  if (id === "reveal") {
+    const s = S.session; s.answer = ($("#recall-in") || $("#use-in"))?.value?.trim() || s.answer;
+    if (modeOf(cur()) === "recall") s.recallResult = s.answer ? judgeRecall(s.answer, cur()) : null;
+    s.phase = "back"; renderSession(); return;
+  }
+  if (id === "recall-check") { const s = S.session; s.answer = $("#recall-in").value.trim(); s.recallResult = judgeRecall(s.answer, cur()); s.phase = "back"; renderSession(); return; }
+  if (id === "use-check") return runUseCheck();
+  if (id === "stop-check") { S.session.ctl?.abort(); return; }
+  if (t.dataset.grade) return grade(t.dataset.grade);
+
+  // Add
+  if (t.dataset.amode) { S.add.mode = t.dataset.amode; S.add.error = ""; S.add.cands = []; S.add.picked = new Set(); buildAdd(); return; }
+  if (id === "a-prepare") {
+    const a = S.add; if (!a.term.trim()) { a.error = "Type the word or expression first."; buildAdd(); return; }
+    return prepare([{ term: a.term.trim(), sentence: a.context.trim(), source: a.source.trim() }]);
+  }
+  if (id === "a-manual") { const a = S.add; a.drafts.push(manualDraft({ term: a.term.trim(), sentence: a.context.trim(), source: a.source.trim() })); a.term = ""; a.context = ""; buildAdd(); return; }
+  if (id === "a-find") return findExpressions();
+  if (t.dataset.cand !== undefined) { const i = +t.dataset.cand, p = S.add.picked; p.has(i) ? p.delete(i) : p.add(i); buildAdd(); return; }
+  if (id === "a-prep-picked") { const a = S.add; return prepare([...a.picked].sort().map(i => ({ term: a.cands[i].term, sentence: a.cands[i].sentence, source: a.source.trim() }))); }
+  if (t.dataset.dsave !== undefined) { const i = +t.dataset.dsave; S.add.drafts.forEach((_, j) => readDraftInputs(j)); t.disabled = true; if (await saveDraft(i)) { S.add.drafts.splice(i, 1); } $("#drafts").innerHTML = renderDrafts(); return; }
+  if (t.dataset.ddiscard !== undefined) { S.add.drafts.forEach((_, j) => readDraftInputs(j)); S.add.drafts.splice(+t.dataset.ddiscard, 1); $("#drafts").innerHTML = renderDrafts(); return; }
+  if (id === "save-all") {
+    t.disabled = true; S.add.drafts.forEach((_, j) => readDraftInputs(j));
+    const keep = []; let n = 0;
+    for (let i = 0; i < S.add.drafts.length; i++) { if (await saveDraft(i, true)) n++; else keep.push(S.add.drafts[i]); }
+    S.add.drafts = keep; $("#drafts").innerHTML = renderDrafts(); toast(`Saved ${plural(n, "expression")}`); return;
+  }
+
+  // Settings
+  if (id === "s-key-show") { const k = $("#s-key"); k.type = k.type === "password" ? "text" : "password"; t.textContent = k.type === "password" ? "Show" : "Hide"; return; }
+  if (id === "s-save-ai") { SET.apiKey = $("#s-key").value.trim(); SET.model = $("#s-model").value; saveSettings(); buildSettings(); $("#s-ai-msg").innerHTML = SET.apiKey ? `<span class="okline">Saved. Use Test connection to check the key.</span>` : "Saved without a key. AI help stays off."; return; }
+  if (id === "s-forget") { SET.apiKey = ""; saveSettings(); buildSettings(); toast("API key removed from this device"); return; }
+  if (id === "s-test") {
+    const msg = $("#s-ai-msg"); t.disabled = true; msg.innerHTML = `<span class="thinking"><span class="spinner"></span>Contacting Claude…</span>`;
+    try { const r = await askJSON('Reply with exactly this JSON: {"ok": true}', { maxTokens: 30 }); msg.innerHTML = r?.ok ? `<span class="okline">Connected. AI help is on.</span>` : `<span class="okline">Connected.</span>`; }
+    catch (e) { msg.innerHTML = `<span class="err">${esc(aiErr(e) || "Test stopped.")}</span>`; }
+    t.disabled = false; return;
+  }
+  if (id === "s-save-practice") { SET.newPerDay = clampInt($("#s-new").value, 0, 30, 5); SET.maxReviews = clampInt($("#s-max").value, 5, 100, 20); SET.voice = $("#s-voice").value; SET.micLang = $("#s-mic").value; saveSettings(); buildSettings(); toast("Practice settings saved"); return; }
+  if (id === "s-export") return exportBackup();
+  if (id === "s-merge") return applyImport("merge");
+  if (id === "s-replace") return applyImport("replace");
+  if (id === "s-imp-cancel") { S.importPending = null; buildSettings(); return; }
+  if (id === "s-wipe") { S.confirmWipe = true; buildSettings(); return; }
+  if (id === "s-wipe-no") { S.confirmWipe = false; buildSettings(); return; }
+  if (id === "s-wipe-yes") { S.confirmWipe = false; S.entries = []; S.stats = {}; persist(); onData(); buildSettings(); toast("Portfolio erased"); return; }
+
+  // Portfolio
+  if (t.dataset.filter) { S.pf.filter = t.dataset.filter; document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", b.dataset.filter === S.pf.filter)); renderList(); return; }
+  if (id === "pf-export") return exportCsv();
+  if (t.dataset.open) return openDetail(t.dataset.open);
+
+  // Sheet
+  if (id === "sheet-close") return closeDetail();
+  if (id === "edit-start") { S.editing = true; renderSheet(); return; }
+  if (id === "edit-cancel") { S.editing = false; renderSheet(); return; }
+  if (id === "edit-save") {
+    const e = S.entries.find(x => x.id === S.open), get = k => ($("#e-" + k)?.value || "").trim();
+    const ctx = get("context"); const oldCtx = unmark(e.context_marked || e.context);
+    const patch = { term: get("term") || e.term, ar: get("ar"), ar_alt: get("ar_alt"), meaning: get("meaning"), source: get("source"), note: get("note") };
+    if (ctx !== oldCtx) { patch.context = ctx; patch.context_marked = ctx; }
+    t.disabled = true;
+    S.editing = false; updateEntry(e.id, patch); toast("Changes saved");
+    return;
+  }
+  if (id === "del") { S.confirmDel = true; renderSheet(); return; }
+  if (id === "del-no") { S.confirmDel = false; renderSheet(); return; }
+  if (id === "del-yes") { const eid = S.open; closeDetail(); deleteEntry(eid); toast("Deleted"); return; }
+  if (id === "reset") { const eid = S.open; updateEntry(eid, { step: 0, due: Date.now(), lapses: 0 }); toast("It will come back as a new expression"); return; }
+});
+
+document.addEventListener("input", ev => {
+  const t = ev.target, a = S.add;
+  if (t.id === "a-term") a.term = t.value;
+  else if (t.id === "a-context") a.context = t.value;
+  else if (t.id === "a-source") a.source = t.value;
+  else if (t.id === "a-text") a.text = t.value;
+  else if (t.id === "pf-q") { S.pf.q = t.value; renderList(); }
+  else if (t.id === "recall-in" || t.id === "use-in") S.session.answer = t.value;
+});
+document.addEventListener("change", ev => {
+  const t = ev.target;
+  if (t.id === "pf-sort") { S.pf.sort = t.value; renderList(); }
+  if (t.id === "s-import" && t.files?.[0]) { readBackup(t.files[0]); t.value = ""; }
+  if (t.id === "a-file" && t.files?.[0]) {
+    const a = S.add; if (a.fileUrl) URL.revokeObjectURL(a.fileUrl);
+    a.file = t.files[0]; a.fileUrl = URL.createObjectURL(a.file); a.cands = []; a.picked = new Set(); a.error = ""; buildAdd();
+  }
+});
+document.addEventListener("keydown", ev => {
+  if (ev.key === "Escape" && S.open) { closeDetail(); return; }
+  if (ev.key === "Enter" && !ev.shiftKey) {
+    if (ev.target.id === "recall-in") { ev.preventDefault(); $("#recall-check")?.click(); }
+    else if (ev.target.id === "a-term") { ev.preventDefault(); ($("#a-prepare") || $("#a-manual"))?.click(); }
+  }
+});
+
+/* ---------- data wiring ---------- */
+function onData() {
+  $("#count").textContent = S.entries.length;
+  if (S.view === "today" && !S.session) buildToday();
+  else if (S.view === "portfolio") renderList();
+  else if (S.view === "add" && S.add.drafts.length && !document.activeElement?.closest?.(".draft")) $("#drafts").innerHTML = renderDrafts();
+  if (S.open && !S.editing) renderSheet();
+}
+
+/* ---------- Settings ---------- */
+function buildSettings() {
+  const v = $("#view-settings"), sel = (a, b) => (a === b ? "selected" : "");
+  const last = SET.lastBackup ? new Date(SET.lastBackup).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "never";
+  const imp = S.importPending;
+  v.innerHTML = `
+  <div class="card pad setgroup">
+    <h3>AI connection</h3>
+    <p class="small muted">Claude writes the Arabic equivalents, finds expressions in your texts and photos, and checks your sentences. Create an API key at console.anthropic.com and paste it here. The key is stored only on this device and is sent only to Anthropic.</p>
+    <label class="f" for="s-key">Anthropic API key<span class="keyline"><input class="in" id="s-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…" value="${esc(SET.apiKey)}"><button class="btn" id="s-key-show" type="button">Show</button></span></label>
+    <label class="f" for="s-model">Model<select class="in" id="s-model">${MODELS.map(([val, l]) => `<option value="${val}" ${sel(SET.model, val)}>${l}</option>`).join("")}</select></label>
+    <div class="row"><button class="btn primary" id="s-save-ai">Save</button><button class="btn" id="s-test" ${SET.apiKey ? "" : "disabled"}>Test connection</button>${SET.apiKey ? `<button class="btn ghost danger" id="s-forget">Remove key</button>` : ""}</div>
+    <p id="s-ai-msg" class="small" aria-live="polite"></p>
+  </div>
+  <div class="card pad setgroup">
+    <h3>Daily practice</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px">
+      <label class="f" for="s-new">New expressions per day<input class="in" id="s-new" type="number" inputmode="numeric" min="0" max="30" value="${NEW_PER_DAY}"></label>
+      <label class="f" for="s-max">Most reviews per session<input class="in" id="s-max" type="number" inputmode="numeric" min="5" max="100" value="${MAX_REVIEWS}"></label>
+      <label class="f" for="s-voice">Pronunciation accent<select class="in" id="s-voice"><option value="en-GB" ${sel(SET.voice, "en-GB")}>British English</option><option value="en-US" ${sel(SET.voice, "en-US")}>American English</option></select></label>
+      <label class="f" for="s-mic">Dictation accent<select class="in" id="s-mic"><option value="en-US" ${sel(SET.micLang, "en-US")}>American English</option><option value="en-GB" ${sel(SET.micLang, "en-GB")}>British English</option></select></label>
+    </div>
+    <p class="small muted">About ${NEW_PER_DAY} new and up to ${MAX_REVIEWS} review expressions keeps a session near 5–10 minutes.</p>
+    <div><button class="btn primary" id="s-save-practice">Save</button></div>
+  </div>
+  <div class="card pad setgroup">
+    <h3>Backup and moving between devices</h3>
+    <p class="small muted">Your portfolio is saved in this browser on this device. To use it on your phone and your laptop, export a backup on one and import it on the other. Export regularly so nothing is lost if the browser's data is cleared.</p>
+    <div class="row"><button class="btn primary" id="s-export">Export backup</button><label class="btn" for="s-import">Import backup</label><input type="file" id="s-import" accept="application/json,.json" hidden></div>
+    <p class="small muted">Last backup from this device: ${last}. ${plural(S.entries.length, "expression")} stored here.</p>
+    ${imp ? `<div class="confirm" style="background:var(--accent-soft);border-color:var(--line)"><span>Backup from ${esc(imp.date)} with ${plural(imp.entries.length, "expression")}. Merge keeps both and takes the most-practised copy of each expression; Replace swaps your current portfolio for the backup.</span><span class="row"><button class="btn primary" id="s-merge">Merge</button><button class="btn" id="s-replace">Replace</button><button class="btn ghost" id="s-imp-cancel">Cancel</button></span></div>` : ""}
+  </div>
+  <div class="card pad setgroup">
+    <h3>Start over</h3>
+    <p class="small muted">Erase every expression and your progress from this device. Your API key and settings stay.</p>
+    ${S.confirmWipe ? `<div class="confirm"><span>Erase ${plural(S.entries.length, "expression")}? This can't be undone. Export a backup first if you might want them back.</span><span class="row"><button class="btn danger" id="s-wipe-yes">Erase everything</button><button class="btn ghost" id="s-wipe-no">Keep</button></span></div>` : `<div><button class="btn danger" id="s-wipe">Erase portfolio</button></div>`}
+  </div>
+  <p class="small muted" style="text-align:center">Smart English Language Portfolio · data stays on this device</p>`;
+}
+function exportBackup() {
+  const data = JSON.stringify({ app: "smart-english-portfolio", version: 1, exported: new Date().toISOString(), entries: S.entries, stats: S.stats }, null, 1);
+  downloadFile(`english-portfolio-backup-${dayKey()}.json`, data, "application/json");
+  SET.lastBackup = Date.now(); saveSettings(); buildSettings();
+}
+async function readBackup(file) {
+  try {
+    const d = JSON.parse(await file.text());
+    const entries = Array.isArray(d) ? d : d.entries;
+    if (!Array.isArray(entries) || entries.some(e => !e || typeof e.term !== "string")) throw 0;
+    S.importPending = { entries: entries.map(e => ({ ...e, id: e.id || newId(), collocations: e.collocations || [], examples: e.examples || [] })), stats: d.stats || {}, date: d.exported ? new Date(d.exported).toLocaleDateString() : "an earlier date" };
+  } catch (_) { toast("That file isn't a portfolio backup."); S.importPending = null; }
+  buildSettings();
+}
+function applyImport(mode) {
+  const imp = S.importPending; if (!imp) return;
+  if (mode === "replace") { S.entries = imp.entries; S.stats = imp.stats; }
+  else {
+    const byId = new Map(S.entries.map(e => [e.id, e])), byTerm = new Map(S.entries.map(e => [norm(e.term), e]));
+    let added = 0;
+    for (const e of imp.entries) {
+      const mine = byId.get(e.id) || byTerm.get(norm(e.term));
+      if (!mine) { S.entries.push(e); added++; }
+      else if ((e.reps || 0) > (mine.reps || 0) || ((e.reps || 0) === (mine.reps || 0) && (e.lastReview || 0) > (mine.lastReview || 0))) Object.assign(mine, e, { id: mine.id });
+    }
+    if ((imp.stats.lastDay || "") > (S.stats.lastDay || "")) S.stats = { ...S.stats, ...imp.stats };
+    toast(`Merged: ${plural(added, "new expression")} added`);
+  }
+  S.importPending = null; persist(); onData(); buildSettings();
+  if (mode === "replace") toast("Portfolio replaced from backup");
+}
+
+function init() {
+  loadAll();
+  S.loaded = true; S.imagesOk = true;
+  build();
+}
+init();
+})();
+</script>
+</body>
+</html>
