@@ -981,13 +981,67 @@ async function saveDraft(i, quiet) {
   return true;
 }
 
+/* ---------- Search ---------- */
+const STOP = new Set("a an the of to in on at for by with from as and or but if than then that this these those which who whom whose what when where why how is are was were be been being am do does did don't doesn't didn't not no it its it's i me my you your we our they them their he she his her one ones thing things something someone somebody stuff very much many more most some any all just really so too can could will would should may might must shall have has had get got gets make makes need needs needed".split(" "));
+function stem(w) {
+  if (/[؀-ۿ]/.test(w)) {
+    w = w.replace(/[ً-ْـ]/g, "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+    return w.replace(/^(وال|بال|فال|كال|لل|ال)/, "").replace(/(ات|ون|ين|ها|ه)$/, "") || w;
+  }
+  if (w.length > 4 && w.endsWith("ies")) w = w.slice(0, -3) + "y";
+  else if (w.length > 5 && w.endsWith("est")) w = w.slice(0, -3);
+  else if (w.length > 5 && w.endsWith("ing")) w = w.slice(0, -3);
+  else if (w.length > 4 && w.endsWith("ed")) w = w.slice(0, -2);
+  else if (w.length > 4 && w.endsWith("er")) w = w.slice(0, -2);
+  else if (w.length > 4 && w.endsWith("ly")) w = w.slice(0, -2);
+  else if (w.length > 3 && w.endsWith("es") && /(sh|ch|x|ss)es$/.test(w)) w = w.slice(0, -2);
+  else if (w.length > 3 && w.endsWith("s") && !w.endsWith("ss")) w = w.slice(0, -1);
+  if (w.length > 3 && /[^aeiou]y$/.test(w)) w = w.slice(0, -1) + "i";
+  if (w.length > 3 && /([^aeioul])\1$/.test(w)) w = w.slice(0, -1);
+  return w;
+}
+function tokens(text) {
+  return String(text || "").toLowerCase().replace(/[’']/g, "'").split(/[^a-z0-9'؀-ۿ]+/).filter(t => t && !STOP.has(t)).map(stem).filter(t => t.length > 1);
+}
+function searchIndex(e) {
+  if (e._ix && e._ixv === e.term + e.meaning + e.ar) return e._ix;
+  const text = [e.term, e.meaning, e.in_context, e.ar, e.ar_alt, e.ar_literal, e.note, unmark(e.context_marked || e.context), ...(e.examples || []).map(unmark), ...(e.collocations || []), ...(e.used_in || [])].join(" ");
+  Object.defineProperty(e, "_ix", { value: new Set(tokens(text)), configurable: true, writable: true, enumerable: false });
+  Object.defineProperty(e, "_ixv", { value: e.term + e.meaning + e.ar, configurable: true, writable: true, enumerable: false });
+  return e._ix;
+}
+function matchScore(e, q, qt) {
+  const raw = q.toLowerCase();
+  if (e.term.toLowerCase().includes(raw)) return 100;
+  if (`${e.ar} ${e.ar_alt} ${e.meaning}`.toLowerCase().includes(raw)) return 80;
+  if (!qt.length) return 0;
+  const ix = searchIndex(e); let hit = 0;
+  for (const t of qt) {
+    if (ix.has(t)) { hit++; continue; }
+    if (t.length >= 4) for (const w of ix) { if (w.length >= 4 && (w.startsWith(t) || t.startsWith(w))) { hit += .8; break; } }
+  }
+  const r = hit / qt.length;
+  return r >= (qt.length <= 2 ? .99 : .6) ? Math.round(r * 60) : 0;
+}
+async function aiSearch(q) {
+  const pool = S.entries.slice(0, 400).map((e, i) => ({ i, term: e.term, meaning: e.meaning || "", ar: e.ar || "" }));
+  const prompt = `A learner is searching their personal vocabulary list. The search may be in English or Arabic, and may describe the meaning in their own words rather than quote the expression.
+Search: """${q.slice(0, 300)}"""
+List (index, expression, meaning, Arabic):
+${pool.map(x => `${x.i}. ${x.term} | ${x.meaning} | ${x.ar}`).join("\n")}
+Reply with only a JSON array of the indexes of the expressions whose meaning matches the search, best match first, at most 8. Reply [] if none fit.`;
+  const out = await askJSON(prompt, { maxTokens: 200 });
+  const idx = Array.isArray(out) ? out : (Array.isArray(out?.indexes) ? out.indexes : []);
+  return [...new Set(idx.map(n => parseInt(n, 10)).filter(n => n >= 0 && n < pool.length))].map(n => S.entries[n].id);
+}
+
 /* ---------- Portfolio ---------- */
 function buildPortfolio() {
   const v = $("#view-portfolio"), f = S.pf;
   if (S.unavailable || S.notOwner) { v.innerHTML = `<div class="card empty"><h2>${S.notOwner ? "This portfolio is private" : "Open this page in Claude"}</h2></div>`; return; }
   const filters = [["all", "All"], ["due", "Due"], ["new", "New"], ["learning", "Learning"], ["mastered", "Mastered"]];
   v.innerHTML = `<div class="tools">
-      <div class="searchbox">${ICON.search}<input class="in" id="pf-q" type="search" placeholder="Search English or Arabic" value="${esc(f.q)}" autocomplete="off"></div>
+      <div class="searchbox">${ICON.search}<input class="in" id="pf-q" type="search" placeholder="Search a word, meaning, or Arabic" value="${esc(f.q)}" autocomplete="off"></div>
       <div class="row between">
         <div class="seg" role="group" aria-label="Filter">${filters.map(([k, l]) => `<button data-filter="${k}" aria-pressed="${f.filter === k}">${l}</button>`).join("")}</div>
         <div class="row" style="gap:8px">
@@ -1008,8 +1062,16 @@ function renderList() {
   const box = $("#pf-list"); if (!box) return;
   if (!S.loaded) { box.innerHTML = `<div class="thinking"><span class="spinner"></span>Loading…</div>`; return; }
   const f = S.pf, q = f.q.trim().toLowerCase(), now = Date.now();
+  const qt = q ? tokens(q) : [];
+  const scores = new Map();
+  const ai = q && S.pf.ai?.q === q ? S.pf.ai : null;
   let list = S.entries.filter(e => {
-    if (q && !(`${e.term} ${e.ar} ${e.ar_alt} ${e.meaning}`.toLowerCase().includes(q))) return false;
+    if (q) {
+      let sc = matchScore(e, q, qt);
+      if (ai) { const k = ai.ids.indexOf(e.id); if (k >= 0) sc = Math.max(sc, 50 - k); }
+      if (!sc) return false;
+      scores.set(e.id, sc);
+    }
     const s = e.step || 0;
     if (f.filter === "due") return s > 0 && e.due <= now;
     if (f.filter === "new") return s === 0;
@@ -1017,13 +1079,19 @@ function renderList() {
     if (f.filter === "mastered") return s >= MASTER_STEP;
     return true;
   });
-  list.sort(f.sort === "freq" ? (a, b) => ((b.frequency || 0) - (a.frequency || 0)) || a.term.localeCompare(b.term) : f.sort === "az" ? (a, b) => a.term.localeCompare(b.term) : f.sort === "due" ? (a, b) => ((a.step ? a.due : 9e15) - (b.step ? b.due : 9e15)) : (a, b) => (b.created || 0) - (a.created || 0));
+  if (q) list.sort((a, b) => scores.get(b.id) - scores.get(a.id));
+  else list.sort(f.sort === "freq" ? (a, b) => ((b.frequency || 0) - (a.frequency || 0)) || a.term.localeCompare(b.term) : f.sort === "az" ? (a, b) => a.term.localeCompare(b.term) : f.sort === "due" ? (a, b) => ((a.step ? a.due : 9e15) - (b.step ? b.due : 9e15)) : (a, b) => (b.created || 0) - (a.created || 0));
   if (!S.entries.length) { box.innerHTML = `<div class="card empty"><h2>Nothing here yet</h2><p class="muted">Expressions you add appear here with their Arabic equivalents.</p><button class="btn primary" data-go="add">Add an expression</button></div>`; return; }
-  if (!list.length) { box.innerHTML = `<p class="muted" style="padding:12px 2px">No expressions match. Try another search or filter.</p>`; return; }
+  const aiRow = q && !S.aiOff
+    ? (S.pf.aiBusy ? `<div class="thinking"><span class="spinner"></span>Searching by meaning…</div>`
+      : ai ? `<p class="small muted">${ai.ids.length ? "Includes matches by meaning." : "No expression in your portfolio has that meaning."}</p>`
+      : `<div class="notice"><span>${list.length ? "Not what you're looking for?" : "No words match."} Let the AI find expressions with this meaning.</span><button class="btn" id="pf-ai">${ICON.spark} Search by meaning</button></div>`)
+    : "";
+  if (!list.length) { box.innerHTML = (q && !S.aiOff ? "" : `<p class="muted" style="padding:12px 2px">No expressions match. Try another search or filter.</p>`) + aiRow; return; }
   box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<button class="entry" data-open="${e.id}">
       <span class="t">${esc(e.term)}</span><span class="a ar" lang="ar">${esc(e.ar)}</span>
       ${e.meaning ? `<span class="m">${esc(e.meaning)}</span>` : ""}
-      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${freqMeter(e, true)}${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("");
+      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${freqMeter(e, true)}${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("") + aiRow;
 }
 
 /* ---------- Detail sheet ---------- */
@@ -1134,6 +1202,13 @@ document.addEventListener("click", async ev => {
   // Portfolio
   if (t.dataset.filter) { S.pf.filter = t.dataset.filter; document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", b.dataset.filter === S.pf.filter)); renderList(); return; }
   if (id === "pf-export") return exportCsv();
+  if (id === "pf-ai") {
+    const q = S.pf.q.trim().toLowerCase(); if (!q) return;
+    S.pf.aiBusy = true; renderList();
+    try { S.pf.ai = { q, ids: await aiSearch(q) }; }
+    catch (err) { toast(aiErr(err) || "Search stopped."); }
+    S.pf.aiBusy = false; renderList(); return;
+  }
   if (id === "rate-all") return rateMissing(S.entries.filter(e => !e.frequency), t);
   if (t.dataset.rate) { const e = S.entries.find(x => x.id === t.dataset.rate); if (e) return rateMissing([e], t); return; }
   if (t.dataset.open) return openDetail(t.dataset.open);
