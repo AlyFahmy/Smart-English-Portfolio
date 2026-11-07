@@ -123,6 +123,18 @@ textarea.in{resize:vertical;min-height:80px;line-height:1.5}
 .freq .bars i.on{background:var(--accent)}
 .freq.sm{font-size:12px}
 .freqinfo{display:flex;flex-direction:column;gap:6px}
+.sugg{display:flex;flex-direction:column;gap:6px;text-align:left;width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;cursor:pointer}
+.sugg:hover{border-color:var(--muted)}
+.sugg[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent-soft) 55%,var(--card))}
+.sugg-top{display:flex;gap:10px;align-items:baseline}
+.sugg .t{font:600 18px/1.3 var(--display);flex:1;min-width:0;overflow-wrap:anywhere}
+.sugg .a{font-size:18px;line-height:1.4;text-align:right}
+.sugg .m{font-size:14px;color:var(--muted)}
+.sugg .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sugg .ex{font:italic 500 15px/1.5 var(--display)}
+.tick{flex:none;width:18px;height:18px;border:2px solid var(--line);border-radius:5px;align-self:center;display:grid;place-items:center}
+.sugg[aria-pressed="true"] .tick{background:var(--accent);border-color:var(--accent)}
+.sugg[aria-pressed="true"] .tick::after{content:"";width:5px;height:9px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
 
 /* Today */
 .hero{padding:26px 22px;display:flex;flex-direction:column;gap:14px}
@@ -330,7 +342,7 @@ const speakBtn = (text, label = "Listen") => canSpeak ? `<button class="iconbtn"
 const S = {
   view: "today", entries: [], stats: {}, loaded: false, slow: false, dbError: null, unavailable: false, notOwner: false,
   session: null,
-  add: { mode: "type", term: "", context: "", source: "", text: "", file: null, fileUrl: "", cands: [], picked: new Set(), drafts: [], busy: false, error: "" },
+  add: { sugg: [], sPicked: new Set(), shown: [], theme: "", mode: "type", term: "", context: "", source: "", text: "", file: null, fileUrl: "", cands: [], picked: new Set(), drafts: [], busy: false, error: "" },
   pf: { q: "", filter: "all", sort: "new" },
   open: null, editing: false, confirmDel: false,
   aiOff: false, imagesOk: false,
@@ -338,7 +350,7 @@ const S = {
 /* ---------- on-device storage ---------- */
 const KEY_DATA = "sep.portfolio.v1", KEY_SET = "sep.settings.v1";
 const MODELS = [["claude-sonnet-5-5", "Claude Sonnet 5.5 (recommended)"], ["claude-haiku-5-5", "Claude Haiku 5.5 (fastest, lowest cost)"], ["claude-opus-5-5", "Claude Opus 5.5 (most capable)"]];
-const DEFAULT_SETTINGS = { apiKey: "", model: "claude-sonnet-5-5", newPerDay: 5, maxReviews: 20, voice: "en-GB", micLang: "en-US", lastBackup: 0 };
+const DEFAULT_SETTINGS = { aiTopic: "any", aiLevel: "common", apiKey: "", model: "claude-sonnet-5-5", newPerDay: 5, maxReviews: 20, voice: "en-GB", micLang: "en-US", lastBackup: 0 };
 let SET = { ...DEFAULT_SETTINGS };
 let storageOk = true;
 const clampInt = (v, a, b, d) => { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.min(b, Math.max(a, n)) : d; };
@@ -532,10 +544,7 @@ async function rateMissing(list, btn) {
   if (S.open) renderSheet();
 }
 
-async function aiEnrich(items) {
-  const prompt = `You are an expert lexicographer helping an Egyptian Arabic-speaking university professor with advanced English master new English vocabulary.
-For each item below, write a dictionary entry. Reply with only a JSON array, one object per item, in the same order. Each object has exactly these fields:
-"term": the expression in its dictionary (base) form, e.g. "bite the bullet", "take something for granted";
+const ENTRY_FIELDS = `"term": the expression in its dictionary (base) form, e.g. "bite the bullet", "take something for granted";
 "kind": one of "word", "phrasal verb", "idiom", "collocation", "expression", "proverb";
 "pos": part of speech for single words (noun, verb, adjective...), otherwise "";
 "ipa": British IPA pronunciation between slashes;
@@ -549,7 +558,12 @@ ${FREQ_SPEC}
 "note": one practical usage tip in English (at most 22 words): nuance, a common mistake, or a trap for Arabic speakers;
 "collocations": array of up to 4 common collocations or grammar patterns;
 "examples": array of 2 natural, professional-sounding example sentences with the expression wrapped in [[ ]] exactly as it appears in the sentence;
-"context_marked": the given sentence with the expression wrapped in [[ ]] as it appears, or "" if no sentence was given.
+"context_marked": the given sentence with the expression wrapped in [[ ]] as it appears, or "" if no sentence was given.`;
+
+async function aiEnrich(items) {
+  const prompt = `You are an expert lexicographer helping an Egyptian Arabic-speaking university professor with advanced English master new English vocabulary.
+For each item below, write a dictionary entry. Reply with only a JSON array, one object per item, in the same order. Each object has exactly these fields:
+${ENTRY_FIELDS}
 
 Items:
 ${JSON.stringify(items.map(i => ({ expression: i.term, sentence: i.sentence || "" })))}`;
@@ -569,6 +583,38 @@ function cleanEntry(o, it) {
     context: it.sentence || "", context_marked: str(o.context_marked) || (it.sentence || ""),
     source: it.source || "",
   };
+}
+
+const AI_TOPICS = [
+  ["any", "Any topic", "any area of educated adult life"],
+  ["professional", "Professional", "leadership, management, meetings, negotiation and formal emails"],
+  ["academic", "Academic", "academic writing, research, presenting at conferences, peer review and lecturing"],
+  ["tech", "Technology & AI", "how technology, AI and innovation are discussed in the media and at work"],
+  ["everyday", "Everyday & idioms", "idioms and phrasal verbs common in everyday conversation"],
+];
+const AI_LEVELS = [
+  ["common", "Advanced, but common (B2–C1)", "CEFR B2 to C1, rated 3, 4 or 5 on the frequency scale: expressions native speakers use often that an intermediate learner may not know yet"],
+  ["advanced", "Very advanced (C1–C2)", "CEFR C1 to C2, rated 2, 3 or 4 on the frequency scale: refined, precise expressions an educated native speaker would use"],
+  ["mixed", "Mixed (B1–C2)", "a mix from CEFR B1 to C2, mostly rated 3 or higher on the frequency scale"],
+];
+async function aiSuggest({ topic, level, theme }) {
+  const T = AI_TOPICS.find(x => x[0] === topic) || AI_TOPICS[0];
+  const L = AI_LEVELS.find(x => x[0] === level) || AI_LEVELS[0];
+  const avoid = [...new Set([...S.entries.map(e => e.term), ...S.add.shown])].slice(-600);
+  const prompt = `You are an expert lexicographer and English teacher. Choose 5 English words, phrasal verbs, idioms, collocations or expressions that are well worth learning for an Egyptian Arabic-speaking university professor with advanced English.
+Topic: ${T[2]}.${theme ? `\nFocus especially on: ${theme.slice(0, 120)}.` : ""}
+Level: ${L[2]}.
+Choose expressions that are genuinely useful, natural and current. Vary the kinds (not all idioms). Do not choose any of these, which the learner already has or has seen:
+${JSON.stringify(avoid)}
+
+Reply with only a JSON array of 5 objects. Each object has exactly these fields:
+${ENTRY_FIELDS}
+For "in_context" and "context_marked" use "".`;
+  const out = await askJSON(prompt, { maxTokens: 5200 });
+  const arr = Array.isArray(out) ? out : (Array.isArray(out?.items) ? out.items : []);
+  const have = new Set(avoid.map(norm));
+  return arr.map(o => cleanEntry(o || {}, { term: "", sentence: "", source: "Suggested by AI" }))
+    .filter(e => e.term && !have.has(norm(e.term)) && (have.add(norm(e.term)), true));
 }
 
 async function aiExtract(text, file) {
@@ -884,6 +930,7 @@ function buildAdd() {
   if (S.unavailable || S.notOwner) { v.innerHTML = `<div class="card empty"><h2>${S.notOwner ? "This portfolio is private" : "Open this page in Claude"}</h2></div>`; return; }
   const modes = [["type", "Type it"], ["sentence", "From a sentence"]];
   if (S.imagesOk) modes.push(["photo", "From a photo"]);
+  modes.push(["ai", "By AI"]);
   let panel = "";
   if (a.mode === "type") {
     panel = `<label class="f" for="a-term">Word, phrase or expression<span class="field"><input class="in term" id="a-term" autocomplete="off" placeholder="e.g. move the needle" value="${esc(a.term)}">${micBtn("a-term")}</span></label>
@@ -895,6 +942,15 @@ function buildAdd() {
       <label class="f" for="a-source">Source <span class="muted" style="font-weight:400">(optional)</span><input class="in" id="a-source" placeholder="Book, talk, article, meeting…" value="${esc(a.source)}"></label>
       <div class="row"><button class="btn primary" id="a-find" ${a.busy || S.aiOff ? "disabled" : ""}>${ICON.spark} Find expressions</button></div>
       ${S.aiOff ? `<p class="small muted">Finding expressions needs AI help. Use “Type it” to add one yourself.</p>` : ""}`;
+  } else if (a.mode === "ai") {
+    const topic = SET.aiTopic || "any", level = SET.aiLevel || "common";
+    panel = S.aiOff ? `<p class="muted">AI suggestions need your Anthropic API key. Add it in Settings.</p><div><button class="btn" data-go="settings">Open Settings</button></div>`
+    : `<p class="small muted">The AI picks 5 useful expressions you don't have yet, fully prepared with Arabic, frequency and examples. Tick the ones you want to learn.</p>
+      <div class="stack" style="gap:6px"><span class="f" style="font-size:13px;font-weight:500;color:var(--muted)">Topic</span>
+        <div class="seg" role="group" aria-label="Topic">${AI_TOPICS.map(([k, l]) => `<button data-aitopic="${k}" aria-pressed="${topic === k}">${l}</button>`).join("")}</div></div>
+      <label class="f" for="a-level">Level<select class="in" id="a-level">${AI_LEVELS.map(([k, l]) => `<option value="${k}" ${level === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label class="f" for="a-theme">Theme <span class="muted" style="font-weight:400">(optional — e.g. negotiation, giving feedback)</span><span class="field"><input class="in" id="a-theme" autocomplete="off" placeholder="Any theme" value="${esc(a.theme)}">${micBtn("a-theme")}</span></label>
+      <div class="row"><button class="btn primary" id="a-suggest" ${a.busy ? "disabled" : ""}>${ICON.spark} ${a.sugg.length ? "Suggest 5 others" : "Suggest 5 expressions"}</button></div>`;
   } else {
     panel = `<div class="filepick"><label class="btn" for="a-file">${ICON.cam} ${a.file ? "Choose another photo" : "Take or choose a photo"}</label><input type="file" id="a-file" accept="image/*" capture="environment">${a.fileUrl ? `<img class="thumb" src="${a.fileUrl}" alt="Selected photo">` : ""}</div>
       <label class="f" for="a-source">Source <span class="muted" style="font-weight:400">(optional)</span><input class="in" id="a-source" placeholder="Book, report, slide…" value="${esc(a.source)}"></label>
@@ -911,9 +967,20 @@ function buildAdd() {
       <p class="hint">${ICON.mic}<span>${SR ? "Tap the microphone beside a box to dictate in English. Tap it again to stop." : "To speak instead of typing, use the microphone on your phone's keyboard, or dictation on your computer."}</span></p>
       ${a.busy ? `<div class="thinking"><span class="spinner"></span>${esc(a.busyMsg || "Working…")}</div>` : ""}
       ${a.error ? `<p class="err">${esc(a.error)}</p>` : ""}
-      ${cands}
+      ${a.mode === "ai" ? renderSugg() : cands}
     </div>
     <div id="drafts" class="stack" style="gap:14px">${renderDrafts()}</div>`;
+}
+function renderSugg() {
+  const a = S.add; if (!a.sugg.length) return "";
+  return `<div class="stack"><span class="eyebrow">Tick the ones you want to learn</span>
+    <div class="stack" style="gap:10px">${a.sugg.map((e, i) => `<button class="sugg" data-sugg="${i}" aria-pressed="${a.sPicked.has(i)}">
+      <span class="sugg-top"><span class="tick" aria-hidden="true"></span><span class="t">${esc(e.term)}</span><span class="a ar" lang="ar">${esc(e.ar)}</span></span>
+      <span class="m">${esc(e.meaning)}</span>
+      <span class="meta">${freqMeter(e, true)}${[e.kind, e.register].filter(Boolean).map(t => `<span class="tag">${esc(t)}</span>`).join("")}</span>
+      ${e.examples?.[0] ? `<span class="ex">${marked(e.examples[0])}</span>` : ""}
+    </button>`).join("")}</div>
+    <div class="row"><button class="btn primary" id="a-add-sugg" ${a.sPicked.size ? "" : "disabled"}>Add ${a.sPicked.size || ""} to portfolio</button>${a.sPicked.size < a.sugg.length ? `<button class="btn ghost" id="a-pick-all">Tick all</button>` : ""}</div></div>`;
 }
 function renderDrafts() {
   const d = S.add.drafts; if (!d.length) return "";
@@ -1169,6 +1236,24 @@ document.addEventListener("click", async ev => {
   }
   if (id === "a-manual") { const a = S.add; a.drafts.push(manualDraft({ term: a.term.trim(), sentence: a.context.trim(), source: a.source.trim() })); a.term = ""; a.context = ""; buildAdd(); return; }
   if (id === "a-find") return findExpressions();
+  if (t.dataset.aitopic) { SET.aiTopic = t.dataset.aitopic; saveSettings(); buildAdd(); return; }
+  if (id === "a-suggest") {
+    const a = S.add; a.busy = true; a.error = ""; a.busyMsg = "Choosing 5 expressions for you…"; buildAdd();
+    try {
+      const list = await aiSuggest({ topic: SET.aiTopic, level: SET.aiLevel, theme: a.theme.trim() });
+      if (!list.length) a.error = "The AI didn't return new expressions. Try again or change the topic.";
+      a.sugg = list; a.sPicked = new Set(); a.shown.push(...list.map(e => e.term));
+    } catch (err) { a.error = aiErr(err) || ""; }
+    a.busy = false; buildAdd(); return;
+  }
+  if (t.dataset.sugg !== undefined) { const i = +t.dataset.sugg, p = S.add.sPicked; p.has(i) ? p.delete(i) : p.add(i); buildAdd(); return; }
+  if (id === "a-pick-all") { S.add.sPicked = new Set(S.add.sugg.map((_, i) => i)); buildAdd(); return; }
+  if (id === "a-add-sugg") {
+    const a = S.add, now = Date.now(); let n = 0;
+    [...a.sPicked].sort((x, y) => x - y).forEach((i, k) => { const e = a.sugg[i]; if (!e) return; addEntry({ ...e, created: now + k, step: 0, due: now + k, reps: 0, lapses: 0, lastReview: 0 }); n++; });
+    a.sugg = a.sugg.filter((_, i) => !a.sPicked.has(i)); a.sPicked = new Set();
+    buildAdd(); toast(`Added ${plural(n, "expression")} to your portfolio`); return;
+  }
   if (t.dataset.cand !== undefined) { const i = +t.dataset.cand, p = S.add.picked; p.has(i) ? p.delete(i) : p.add(i); buildAdd(); return; }
   if (id === "a-prep-picked") { const a = S.add; return prepare([...a.picked].sort().map(i => ({ term: a.cands[i].term, sentence: a.cands[i].sentence, source: a.source.trim() }))); }
   if (t.dataset.dsave !== undefined) { const i = +t.dataset.dsave; S.add.drafts.forEach((_, j) => readDraftInputs(j)); t.disabled = true; if (await saveDraft(i)) { S.add.drafts.splice(i, 1); } $("#drafts").innerHTML = renderDrafts(); return; }
@@ -1238,12 +1323,14 @@ document.addEventListener("input", ev => {
   else if (t.id === "a-context") a.context = t.value;
   else if (t.id === "a-source") a.source = t.value;
   else if (t.id === "a-text") a.text = t.value;
+  else if (t.id === "a-theme") a.theme = t.value;
   else if (t.id === "pf-q") { S.pf.q = t.value; renderList(); }
   else if (t.id === "recall-in" || t.id === "use-in") S.session.answer = t.value;
 });
 document.addEventListener("change", ev => {
   const t = ev.target;
   if (t.id === "pf-sort") { S.pf.sort = t.value; renderList(); }
+  if (t.id === "a-level") { SET.aiLevel = t.value; saveSettings(); }
   if (t.id === "s-import" && t.files?.[0]) { readBackup(t.files[0]); t.value = ""; }
   if (t.id === "a-file" && t.files?.[0]) {
     const a = S.add; if (a.fileUrl) URL.revokeObjectURL(a.fileUrl);
