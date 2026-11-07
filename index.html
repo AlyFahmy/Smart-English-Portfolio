@@ -123,6 +123,13 @@ textarea.in{resize:vertical;min-height:80px;line-height:1.5}
 .freq .bars i.on{background:var(--accent)}
 .freq.sm{font-size:12px}
 .freqinfo{display:flex;flex-direction:column;gap:6px}
+.entry.current{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.listenbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(20,27,38,.10);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.listenbar .inner{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.listenbar #lb-next{flex:1;justify-content:center;padding:12px 16px;font-size:16px}
+.listenbar .pos{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:3.6em;text-align:center}
+body.listening .shell{padding-bottom:110px}
+body.listening .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .sugg{display:flex;flex-direction:column;gap:6px;text-align:left;width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;cursor:pointer}
 .sugg:hover{border-color:var(--muted)}
 .sugg[aria-pressed="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent-soft) 55%,var(--card))}
@@ -271,6 +278,14 @@ textarea.in{resize:vertical;min-height:80px;line-height:1.5}
   </main>
 </div>
 <div id="sheet-root"></div>
+<div id="listenbar" class="listenbar" hidden role="region" aria-label="Next and Listen">
+  <div class="inner">
+    <button class="iconbtn" id="lb-repeat" aria-label="Listen again" title="Listen again"></button>
+    <button class="btn primary" id="lb-next"></button>
+    <span class="pos" id="lb-pos"></span>
+    <button class="iconbtn" id="lb-stop" aria-label="Stop" title="Stop"></button>
+  </div>
+</div>
 <div id="toast" class="toast" hidden></div>
 
 <script>
@@ -638,6 +653,7 @@ Reply with only a JSON object: {"verdict": "correct" | "almost" | "incorrect", "
 
 /* ---------- rendering: nav & view switch ---------- */
 function setView(v) {
+  if (v !== "portfolio") stopListening();
   S.view = v;
   for (const id of ["today", "add", "portfolio", "settings"]) {
     $("#view-" + id).hidden = id !== v;
@@ -1119,6 +1135,7 @@ function buildPortfolio() {
             <option value="freq" ${f.sort === "freq" ? "selected" : ""}>Most common first</option>
           </select>
           ${S.entries.length ? `<button class="btn" id="pf-export">Export CSV</button>` : ""}
+          ${S.entries.length && canSpeak ? `<button class="btn primary" id="pf-listen">${ICON.speak} Next and Listen</button>` : ""}
         </div>
       </div></div>
     ${(() => { const n = S.entries.filter(e => !e.frequency).length; return n && !S.aiOff ? `<div class="notice"><span>${plural(n, "expression")} ${n === 1 ? "has" : "have"} no frequency rating yet.</span><button class="btn" id="rate-all">Rate how common</button></div>` : ""; })()}
@@ -1148,6 +1165,11 @@ function renderList() {
   });
   if (q) list.sort((a, b) => scores.get(b.id) - scores.get(a.id));
   else list.sort(f.sort === "freq" ? (a, b) => ((b.frequency || 0) - (a.frequency || 0)) || a.term.localeCompare(b.term) : f.sort === "az" ? (a, b) => a.term.localeCompare(b.term) : f.sort === "due" ? (a, b) => ((a.step ? a.due : 9e15) - (b.step ? b.due : 9e15)) : (a, b) => (b.created || 0) - (a.created || 0));
+  const key = `${q}|${f.filter}|${f.sort}`;
+  if (S.pf.key !== key) { S.pf.key = key; S.pf.cursor = -1; }
+  S.pf.order = list.map(e => e.id);
+  if (S.pf.cursor >= S.pf.order.length) S.pf.cursor = S.pf.order.length - 1;
+  const curId = S.pf.listening ? S.pf.order[S.pf.cursor] : null;
   if (!S.entries.length) { box.innerHTML = `<div class="card empty"><h2>Nothing here yet</h2><p class="muted">Expressions you add appear here with their Arabic equivalents.</p><button class="btn primary" data-go="add">Add an expression</button></div>`; return; }
   const aiRow = q && !S.aiOff
     ? (S.pf.aiBusy ? `<div class="thinking"><span class="spinner"></span>Searching by meaning…</div>`
@@ -1155,10 +1177,41 @@ function renderList() {
       : `<div class="notice"><span>${list.length ? "Not what you're looking for?" : "No words match."} Let the AI find expressions with this meaning.</span><button class="btn" id="pf-ai">${ICON.spark} Search by meaning</button></div>`)
     : "";
   if (!list.length) { box.innerHTML = (q && !S.aiOff ? "" : `<p class="muted" style="padding:12px 2px">No expressions match. Try another search or filter.</p>`) + aiRow; return; }
-  box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<button class="entry" data-open="${e.id}">
+  box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<button class="entry${e.id === curId ? " current" : ""}" data-open="${e.id}">
       <span class="t">${esc(e.term)}</span><span class="a ar" lang="ar">${esc(e.ar)}</span>
       ${e.meaning ? `<span class="m">${esc(e.meaning)}</span>` : ""}
       <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${freqMeter(e, true)}${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("") + aiRow;
+  updateListenBar();
+}
+
+/* ---------- Next and Listen ---------- */
+function updateListenBar() {
+  const bar = $("#listenbar"), on = !!S.pf.listening && S.view === "portfolio";
+  bar.hidden = !on; document.body.classList.toggle("listening", on);
+  if (!on) return;
+  const n = (S.pf.order || []).length, c = S.pf.cursor;
+  $("#lb-pos").textContent = `${c >= 0 && n ? c + 1 : 0} / ${n}`;
+  $("#lb-next").disabled = !n;
+  $("#lb-repeat").disabled = c < 0 || !n;
+}
+function listenNext() {
+  const o = S.pf.order || []; if (!o.length) { toast("No expressions in this list."); return; }
+  let c = S.pf.cursor + 1;
+  if (c >= o.length) { c = 0; if (o.length > 1) toast("Back to the first expression"); }
+  S.pf.cursor = c;
+  const e = S.entries.find(x => x.id === o[c]); if (!e) return;
+  speak(e.term);
+  document.querySelectorAll(".entry.current").forEach(x => x.classList.remove("current"));
+  const el = document.querySelector(`.entry[data-open="${CSS.escape(e.id)}"]`);
+  if (el) { el.classList.add("current"); el.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth" }); }
+  updateListenBar();
+}
+function stopListening() {
+  if (!S.pf.listening) return;
+  S.pf.listening = false;
+  try { speechSynthesis.cancel(); } catch (_) {}
+  document.querySelectorAll(".entry.current").forEach(x => x.classList.remove("current"));
+  updateListenBar();
 }
 
 /* ---------- Detail sheet ---------- */
@@ -1287,6 +1340,10 @@ document.addEventListener("click", async ev => {
   // Portfolio
   if (t.dataset.filter) { S.pf.filter = t.dataset.filter; document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", b.dataset.filter === S.pf.filter)); renderList(); return; }
   if (id === "pf-export") return exportCsv();
+  if (id === "pf-listen") { S.pf.listening = true; return listenNext(); }
+  if (id === "lb-next") return listenNext();
+  if (id === "lb-repeat") { const e = S.entries.find(x => x.id === (S.pf.order || [])[S.pf.cursor]); if (e) speak(e.term); return; }
+  if (id === "lb-stop") return stopListening();
   if (id === "pf-ai") {
     const q = S.pf.q.trim().toLowerCase(); if (!q) return;
     S.pf.aiBusy = true; renderList();
@@ -1426,6 +1483,8 @@ function applyImport(mode) {
 }
 
 function init() {
+  $("#lb-repeat").innerHTML = ICON.speak; $("#lb-stop").innerHTML = ICON.close;
+  $("#lb-next").innerHTML = `Next and Listen <svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
   loadAll();
   S.loaded = true; S.imagesOk = true;
   build();
