@@ -116,6 +116,13 @@ textarea.in{resize:vertical;min-height:80px;line-height:1.5}
 .pips{display:inline-flex;gap:3px;align-items:center}
 .pips i{width:12px;height:5px;border-radius:2px;background:var(--line)}
 .pips i.on{background:var(--accent)}
+.freq{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);white-space:nowrap}
+.freq b{color:var(--ink);font-weight:600}
+.freq .bars{display:inline-flex;gap:2px;align-items:flex-end;height:13px}
+.freq .bars i{width:4px;border-radius:1px;background:var(--line)}
+.freq .bars i.on{background:var(--accent)}
+.freq.sm{font-size:12px}
+.freqinfo{display:flex;flex-direction:column;gap:6px}
 
 /* Today */
 .hero{padding:26px 22px;display:flex;flex-direction:column;gap:14px}
@@ -380,9 +387,9 @@ function seedExamples() {
   const t = Date.now();
   const base = { example: true, pos: "", source: "Example", step: 0, reps: 0, lapses: 0, lastReview: 0 };
   return [
-    { ...base, id: "ex-move-the-needle", created: t, due: t, term: "move the needle", kind: "idiom", ipa: "/muːv ðə ˈniːdl/", meaning: "To make a noticeable, measurable difference to a situation or result.", in_context: "Make a real, visible difference to research output.", ar: "يُحدث فرقًا ملموسًا", ar_alt: "يعمل فرق حقيقي", ar_literal: "يحرّك الإبرة", register: "informal", note: "Common in business talk, often in the negative: \"this won't move the needle\". Avoid it in formal academic writing.", collocations: ["really move the needle", "won't move the needle", "move the needle on something"], examples: ["One more committee won't [[move the needle]] on graduate employability.", "Partnering with industry labs could really [[move the needle]] for our students."], context: "Small grants alone will not move the needle on research output.", context_marked: "Small grants alone will not [[move the needle]] on research output." },
-    { ...base, id: "ex-double-edged-sword", created: t + 1, due: t + 1, term: "a double-edged sword", kind: "idiom", ipa: "/ə ˌdʌbl ˈedʒd sɔːd/", meaning: "Something that has both clear advantages and serious disadvantages.", in_context: "", ar: "سلاح ذو حدّين", ar_alt: "", ar_literal: "", register: "neutral", note: "Arabic has the same image, so it transfers well. Note the article: \"is a double-edged sword\".", collocations: ["prove to be a double-edged sword", "something of a double-edged sword"], examples: ["Generative AI in the classroom is [[a double-edged sword]].", "Rapid automation can prove to be [[a double-edged sword]] for the labour market."], context: "", context_marked: "" },
-    { ...base, id: "ex-low-hanging-fruit", created: t + 2, due: t + 2, term: "low-hanging fruit", kind: "idiom", ipa: "/ˌləʊ ˌhæŋɪŋ ˈfruːt/", meaning: "The easiest tasks or goals, which bring results with little effort.", in_context: "", ar: "المكاسب السهلة", ar_alt: "الحاجات اللي في المتناول", ar_literal: "الثمار المتدلّية", register: "informal", note: "Uncountable: say \"the low-hanging fruit\", not \"fruits\". Popular in strategy meetings.", collocations: ["go for the low-hanging fruit", "pick the low-hanging fruit"], examples: ["Let's start with [[the low-hanging fruit]]: digitising the admission forms.", "Once the [[low-hanging fruit]] is gone, real reform gets harder."], context: "", context_marked: "" },
+    { ...base, id: "ex-move-the-needle", created: t, due: t, term: "move the needle", kind: "idiom", ipa: "/muːv ðə ˈniːdl/", meaning: "To make a noticeable, measurable difference to a situation or result.", in_context: "Make a real, visible difference to research output.", ar: "يُحدث فرقًا ملموسًا", ar_alt: "يعمل فرق حقيقي", ar_literal: "يحرّك الإبرة", frequency: 3, cefr: "C1", used_in: ["business", "news"], frequency_note: "Mainly spoken and journalistic; more common in US English.", register: "informal", note: "Common in business talk, often in the negative: \"this won't move the needle\". Avoid it in formal academic writing.", collocations: ["really move the needle", "won't move the needle", "move the needle on something"], examples: ["One more committee won't [[move the needle]] on graduate employability.", "Partnering with industry labs could really [[move the needle]] for our students."], context: "Small grants alone will not move the needle on research output.", context_marked: "Small grants alone will not [[move the needle]] on research output." },
+    { ...base, id: "ex-double-edged-sword", created: t + 1, due: t + 1, term: "a double-edged sword", kind: "idiom", ipa: "/ə ˌdʌbl ˈedʒd sɔːd/", meaning: "Something that has both clear advantages and serious disadvantages.", in_context: "", ar: "سلاح ذو حدّين", ar_alt: "", ar_literal: "", frequency: 3, cefr: "C1", used_in: ["news", "academic", "everyday speech"], frequency_note: "", register: "neutral", note: "Arabic has the same image, so it transfers well. Note the article: \"is a double-edged sword\".", collocations: ["prove to be a double-edged sword", "something of a double-edged sword"], examples: ["Generative AI in the classroom is [[a double-edged sword]].", "Rapid automation can prove to be [[a double-edged sword]] for the labour market."], context: "", context_marked: "" },
+    { ...base, id: "ex-low-hanging-fruit", created: t + 2, due: t + 2, term: "low-hanging fruit", kind: "idiom", ipa: "/ˌləʊ ˌhæŋɪŋ ˈfruːt/", meaning: "The easiest tasks or goals, which bring results with little effort.", in_context: "", ar: "المكاسب السهلة", ar_alt: "الحاجات اللي في المتناول", ar_literal: "الثمار المتدلّية", frequency: 3, cefr: "C1", used_in: ["business", "news"], frequency_note: "Typical of meetings and management writing.", register: "informal", note: "Uncountable: say \"the low-hanging fruit\", not \"fruits\". Popular in strategy meetings.", collocations: ["go for the low-hanging fruit", "pick the low-hanging fruit"], examples: ["Let's start with [[the low-hanging fruit]]: digitising the admission forms.", "Once the [[low-hanging fruit]] is gone, real reform gets harder."], context: "", context_marked: "" },
   ];
 }
 
@@ -475,6 +482,56 @@ function aiErr(e) {
   return "Couldn't reach Claude. Try again.";
 }
 
+const FREQ = ["", "Rare", "Uncommon", "Fairly common", "Common", "Very common"];
+const FREQ_SPEC = `"frequency": an integer 1-5 for how common the expression is in present-day English overall: 5 = very common (everyday; among roughly the 3,000 most used words or expressions), 4 = common (known to virtually all native speakers; met regularly in news and at work), 3 = fairly common (met now and then; typical of educated or professional usage), 2 = uncommon (seldom used; specialised, literary or old-fashioned), 1 = rare (obscure, archaic or highly technical);
+"cefr": the CEFR level at which learners typically meet it: "A1", "A2", "B1", "B2", "C1" or "C2";
+"used_in": up to 3 labels for where it is mostly used, from "everyday speech", "business", "academic", "news", "literature", "technical", "social media";
+"frequency_note": at most 18 words on how its use differs between speech and writing, or US and UK English, if it does; otherwise "";`;
+function cleanFreq(o) {
+  const f = parseInt(o.frequency, 10), c = String(o.cefr || "").trim().toUpperCase();
+  return {
+    frequency: f >= 1 && f <= 5 ? f : 0,
+    cefr: /^[ABC][12]$/.test(c) ? c : "",
+    used_in: Array.isArray(o.used_in) ? o.used_in.map(x => String(x).trim()).filter(Boolean).slice(0, 3) : [],
+    frequency_note: typeof o.frequency_note === "string" ? o.frequency_note.trim() : "",
+  };
+}
+async function aiRateFrequency(entries) {
+  const prompt = `You are a corpus linguist. For each English expression below, estimate how common it is, using your knowledge of large corpora of present-day English such as the British National Corpus and COCA.
+Reply with only a JSON array, one object per expression, in the same order. Each object has exactly these fields:
+${FREQ_SPEC}
+
+Expressions:
+${JSON.stringify(entries.map(e => e.term))}`;
+  const out = await askJSON(prompt, { maxTokens: 300 + entries.length * 120 });
+  const arr = Array.isArray(out) ? out : (Array.isArray(out?.items) ? out.items : []);
+  return entries.map((_, i) => cleanFreq(arr[i] || {}));
+}
+function freqMeter(e, small) {
+  const f = +e.frequency || 0; if (!f) return "";
+  let bars = '<span class="bars" aria-hidden="true">';
+  for (let i = 1; i <= 5; i++) bars += `<i class="${i <= f ? "on" : ""}" style="height:${3 + i * 2}px"></i>`;
+  bars += "</span>";
+  return `<span class="freq${small ? " sm" : ""}" title="How common: ${FREQ[f]} (${f} of 5)">${bars}<b>${FREQ[f]}</b>${e.cefr ? ` · ${esc(e.cefr)}` : ""}</span>`;
+}
+async function rateMissing(list, btn) {
+  if (S.aiOff) { toast("Add your API key in Settings first."); return; }
+  if (btn) btn.disabled = true;
+  let done = 0;
+  try {
+    for (let i = 0; i < list.length; i += 15) {
+      const chunk = list.slice(i, i + 15);
+      if (btn) btn.textContent = `Rating ${Math.min(i + chunk.length, list.length)} of ${list.length}…`;
+      const res = await aiRateFrequency(chunk);
+      chunk.forEach((e, k) => { if (res[k].frequency) { Object.assign(e, res[k]); done++; } });
+      persist(); onData();
+    }
+    toast(done === 1 ? "Frequency added" : `Frequency added to ${plural(done, "expression")}`);
+  } catch (err) { toast(aiErr(err) || "Rating stopped."); }
+  if (S.view === "portfolio") buildPortfolio();
+  if (S.open) renderSheet();
+}
+
 async function aiEnrich(items) {
   const prompt = `You are an expert lexicographer helping an Egyptian Arabic-speaking university professor with advanced English master new English vocabulary.
 For each item below, write a dictionary entry. Reply with only a JSON array, one object per item, in the same order. Each object has exactly these fields:
@@ -488,6 +545,7 @@ For each item below, write a dictionary entry. Reply with only a JSON array, one
 "ar_alt": a second Arabic rendering or a common Egyptian colloquial equivalent if it helps, otherwise "";
 "ar_literal": a literal word-for-word Arabic gloss only for idioms whose literal sense differs from the meaning, otherwise "";
 "register": one of "formal", "neutral", "informal", "slang";
+${FREQ_SPEC}
 "note": one practical usage tip in English (at most 22 words): nuance, a common mistake, or a trap for Arabic speakers;
 "collocations": array of up to 4 common collocations or grammar patterns;
 "examples": array of 2 natural, professional-sounding example sentences with the expression wrapped in [[ ]] exactly as it appears in the sentence;
@@ -506,7 +564,7 @@ function cleanEntry(o, it) {
     term: str(o.term) || it.term, kind: str(o.kind), pos: str(o.pos), ipa: str(o.ipa),
     meaning: str(o.meaning), in_context: str(o.in_context),
     ar: str(o.ar), ar_alt: str(o.ar_alt), ar_literal: str(o.ar_literal),
-    register: str(o.register), note: str(o.note),
+    register: str(o.register), note: str(o.note), ...cleanFreq(o),
     collocations: arr(o.collocations).slice(0, 4), examples: arr(o.examples).slice(0, 3),
     context: it.sentence || "", context_marked: str(o.context_marked) || (it.sentence || ""),
     source: it.source || "",
@@ -669,6 +727,8 @@ function metaTags(e) {
 function detailsList(e) {
   const rows = [];
   if (e.meaning) rows.push(["Meaning", esc(e.meaning)]);
+  if (e.frequency) rows.push(["How common", `<div class="freqinfo">${freqMeter(e)}${e.used_in?.length ? `<span class="small muted">Mostly in: ${e.used_in.map(esc).join(", ")}</span>` : ""}${e.frequency_note ? `<span class="small muted">${esc(e.frequency_note)}</span>` : ""}</div>`]);
+  else if (e.id && S.entries.some(x => x.id === e.id) && !S.aiOff) rows.push(["How common", `<button class="btn" data-rate="${esc(e.id)}">Rate how common</button>`]);
   if (e.context_marked || e.context) rows.push(["Where I met it", `<span class="sentence plain">${marked(e.context_marked || e.context)}</span>${e.in_context ? `<div class="small muted" style="margin-top:4px">Here: ${esc(e.in_context)}</div>` : ""}${e.source ? `<div class="small muted">Source: ${esc(e.source)}</div>` : ""}`]);
   else if (e.source) rows.push(["Source", esc(e.source)]);
   if (e.examples?.length) rows.push(["Examples", `<ul class="ex-list">${e.examples.map(x => `<li>${marked(x)}</li>`).join("")}</ul>`]);
@@ -935,10 +995,12 @@ function buildPortfolio() {
             <option value="new" ${f.sort === "new" ? "selected" : ""}>Newest first</option>
             <option value="az" ${f.sort === "az" ? "selected" : ""}>A to Z</option>
             <option value="due" ${f.sort === "due" ? "selected" : ""}>Next due</option>
+            <option value="freq" ${f.sort === "freq" ? "selected" : ""}>Most common first</option>
           </select>
           ${S.entries.length ? `<button class="btn" id="pf-export">Export CSV</button>` : ""}
         </div>
       </div></div>
+    ${(() => { const n = S.entries.filter(e => !e.frequency).length; return n && !S.aiOff ? `<div class="notice"><span>${plural(n, "expression")} ${n === 1 ? "has" : "have"} no frequency rating yet.</span><button class="btn" id="rate-all">Rate how common</button></div>` : ""; })()}
     <div class="list" id="pf-list"></div>`;
   renderList();
 }
@@ -955,13 +1017,13 @@ function renderList() {
     if (f.filter === "mastered") return s >= MASTER_STEP;
     return true;
   });
-  list.sort(f.sort === "az" ? (a, b) => a.term.localeCompare(b.term) : f.sort === "due" ? (a, b) => ((a.step ? a.due : 9e15) - (b.step ? b.due : 9e15)) : (a, b) => (b.created || 0) - (a.created || 0));
+  list.sort(f.sort === "freq" ? (a, b) => ((b.frequency || 0) - (a.frequency || 0)) || a.term.localeCompare(b.term) : f.sort === "az" ? (a, b) => a.term.localeCompare(b.term) : f.sort === "due" ? (a, b) => ((a.step ? a.due : 9e15) - (b.step ? b.due : 9e15)) : (a, b) => (b.created || 0) - (a.created || 0));
   if (!S.entries.length) { box.innerHTML = `<div class="card empty"><h2>Nothing here yet</h2><p class="muted">Expressions you add appear here with their Arabic equivalents.</p><button class="btn primary" data-go="add">Add an expression</button></div>`; return; }
   if (!list.length) { box.innerHTML = `<p class="muted" style="padding:12px 2px">No expressions match. Try another search or filter.</p>`; return; }
   box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<button class="entry" data-open="${e.id}">
       <span class="t">${esc(e.term)}</span><span class="a ar" lang="ar">${esc(e.ar)}</span>
       ${e.meaning ? `<span class="m">${esc(e.meaning)}</span>` : ""}
-      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("");
+      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${freqMeter(e, true)}${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("");
 }
 
 /* ---------- Detail sheet ---------- */
@@ -993,9 +1055,9 @@ function renderSheet() {
 
 /* ---------- export ---------- */
 async function exportCsv() {
-  const cols = ["term", "ar", "ar_alt", "meaning", "kind", "register", "context", "source", "status", "next_review"];
+  const cols = ["term", "ar", "ar_alt", "meaning", "kind", "register", "frequency", "cefr", "context", "source", "status", "next_review"];
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const rows = S.entries.map(e => [e.term, e.ar, e.ar_alt, e.meaning, e.kind, e.register, unmark(e.context_marked || e.context), e.source, statusOf(e)[0], e.step ? new Date(e.due).toISOString().slice(0, 10) : ""].map(q).join(","));
+  const rows = S.entries.map(e => [e.term, e.ar, e.ar_alt, e.meaning, e.kind, e.register, e.frequency ? `${e.frequency} - ${FREQ[e.frequency]}` : "", e.cefr, unmark(e.context_marked || e.context), e.source, statusOf(e)[0], e.step ? new Date(e.due).toISOString().slice(0, 10) : ""].map(q).join(","));
   const data = "﻿" + [cols.join(","), ...rows].join("\r\n");
   downloadFile(`english-portfolio-${dayKey()}.csv`, data, "text/csv;charset=utf-8");
 }
@@ -1072,6 +1134,8 @@ document.addEventListener("click", async ev => {
   // Portfolio
   if (t.dataset.filter) { S.pf.filter = t.dataset.filter; document.querySelectorAll("[data-filter]").forEach(b => b.setAttribute("aria-pressed", b.dataset.filter === S.pf.filter)); renderList(); return; }
   if (id === "pf-export") return exportCsv();
+  if (id === "rate-all") return rateMissing(S.entries.filter(e => !e.frequency), t);
+  if (t.dataset.rate) { const e = S.entries.find(x => x.id === t.dataset.rate); if (e) return rateMissing([e], t); return; }
   if (t.dataset.open) return openDetail(t.dataset.open);
 
   // Sheet
