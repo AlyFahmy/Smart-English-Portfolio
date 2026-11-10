@@ -209,6 +209,10 @@ body.listening .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .list{display:flex;flex-direction:column;gap:10px}
 .entry{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:14px 18px;cursor:pointer;text-align:left;width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px}
 .entry:hover{border-color:var(--muted)}
+.entry-wrap{position:relative}
+.entry.has-speak .meta{padding-right:46px}
+.entry-speak{position:absolute;right:12px;bottom:12px;background:var(--card)}
+.entry-speak.playing{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
 .entry .t{font:600 18px/1.3 var(--display);overflow-wrap:anywhere}
 .entry .a{font-size:19px;line-height:1.4;text-align:right;align-self:start}
 .entry .m{grid-column:1/-1;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
@@ -371,22 +375,84 @@ let storageOk = true;
 const clampInt = (v, a, b, d) => { const n = parseInt(v, 10); return Number.isFinite(n) ? Math.min(b, Math.max(a, n)) : d; };
 const newId = () => (window.crypto?.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 
-function loadAll() {
+/* Storage: IndexedDB (large, private to this app) with localStorage as a fallback. */
+const DB_NAME = "smart-english-portfolio";
+let idb = null, storeMode = "idb", bc = null, writeChain = Promise.resolve();
+const plain = o => JSON.parse(JSON.stringify(o));
+const reqP = r => new Promise((ok, bad) => { r.onsuccess = () => ok(r.result); r.onerror = () => bad(r.error); });
+function idbOpen() {
+  return new Promise((ok, bad) => {
+    let r; try { r = indexedDB.open(DB_NAME, 1); } catch (e) { bad(e); return; }
+    r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains("entries")) d.createObjectStore("entries", { keyPath: "id" }); if (!d.objectStoreNames.contains("meta")) d.createObjectStore("meta"); };
+    r.onsuccess = () => ok(r.result); r.onerror = () => bad(r.error); r.onblocked = () => bad(new Error("blocked"));
+    setTimeout(() => bad(new Error("timeout")), 6000);
+  });
+}
+function txDone(t) { return new Promise((ok, bad) => { t.oncomplete = () => ok(); t.onerror = () => bad(t.error); t.onabort = () => bad(t.error); }); }
+function storeErr(e) {
+  storageOk = false;
+  toast(e?.name === "QuotaExceededError" ? "Storage is full. Export a backup, then delete some entries." : "This browser isn't saving your data (private mode?). Export a backup before closing.");
+}
+function dbWrite(fn) {
+  writeChain = writeChain.then(fn).then(() => { try { bc?.postMessage("changed"); } catch (_) {} }).catch(storeErr);
+  return writeChain;
+}
+function lsPersist() {
+  try { localStorage.setItem(KEY_DATA, JSON.stringify({ app: "smart-english-portfolio", version: 1, entries: S.entries, stats: S.stats })); return true; }
+  catch (e) { storeErr(e); return false; }
+}
+function saveAllNow() {
+  const t = idb.transaction(["entries", "meta"], "readwrite"), es = t.objectStore("entries");
+  es.clear(); for (const e of S.entries) es.put(plain(e));
+  t.objectStore("meta").put(plain(S.stats || {}), "stats"); t.objectStore("meta").put(true, "initialized");
+  return txDone(t);
+}
+function persist() { if (storeMode === "ls") return lsPersist(); dbWrite(saveAllNow); return true; }
+function saveEntry(e) {
+  if (storeMode === "ls") return lsPersist();
+  const copy = plain(e);
+  dbWrite(() => { const t = idb.transaction("entries", "readwrite"); t.objectStore("entries").put(copy); return txDone(t); });
+}
+function removeEntry(id) {
+  if (storeMode === "ls") return lsPersist();
+  dbWrite(() => { const t = idb.transaction("entries", "readwrite"); t.objectStore("entries").delete(id); return txDone(t); });
+}
+function saveStats() {
+  if (storeMode === "ls") return lsPersist();
+  const copy = plain(S.stats || {});
+  dbWrite(() => { const t = idb.transaction("meta", "readwrite"); t.objectStore("meta").put(copy, "stats"); return txDone(t); });
+}
+async function readDB() {
+  const t = idb.transaction(["entries", "meta"]);
+  const [entries, stats, initialized] = await Promise.all([reqP(t.objectStore("entries").getAll()), reqP(t.objectStore("meta").get("stats")), reqP(t.objectStore("meta").get("initialized"))]);
+  return { entries: entries || [], stats: stats || {}, initialized: !!initialized };
+}
+async function loadAll() {
+  try { SET = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(KEY_SET) || "{}") }; } catch (_) {}
+  applySettings();
+  try { idb = await idbOpen(); storeMode = "idb"; } catch (_) { storeMode = "ls"; }
+  if (storeMode === "idb") {
+    try {
+      const d = await readDB();
+      if (d.initialized) { S.entries = d.entries; S.stats = d.stats; }
+      else {
+        let raw = null; try { raw = localStorage.getItem(KEY_DATA); } catch (_) {}
+        if (raw) { const old = JSON.parse(raw); S.entries = Array.isArray(old.entries) ? old.entries : []; S.stats = old.stats || {}; }
+        else { S.entries = seedExamples(); S.stats = {}; }
+        await saveAllNow();
+        if (raw) { try { localStorage.removeItem(KEY_DATA); } catch (_) {} toast(`Moved ${plural(S.entries.length, "expression")} to the new, larger storage`); }
+      }
+      try { bc = new BroadcastChannel("smart-english-portfolio"); bc.onmessage = async () => { try { const d2 = await readDB(); S.entries = d2.entries; S.stats = d2.stats; onData(); } catch (_) {} }; } catch (_) {}
+      try { navigator.storage?.persist?.().catch(() => {}); } catch (_) {}
+      return;
+    } catch (_) { storeMode = "ls"; }
+  }
+  // Fallback: localStorage
   try {
-    SET = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(KEY_SET) || "{}") };
     const raw = localStorage.getItem(KEY_DATA);
     if (raw) { const d = JSON.parse(raw); S.entries = Array.isArray(d.entries) ? d.entries : []; S.stats = d.stats || {}; }
-    else { S.entries = seedExamples(); S.stats = {}; persist(); }
+    else { S.entries = seedExamples(); S.stats = {}; lsPersist(); }
   } catch (_) { storageOk = false; S.entries = seedExamples(); }
-  applySettings();
-}
-function persist() {
-  try { localStorage.setItem(KEY_DATA, JSON.stringify({ app: "smart-english-portfolio", version: 1, entries: S.entries, stats: S.stats })); return true; }
-  catch (e) {
-    storageOk = false;
-    toast(e?.name === "QuotaExceededError" ? "Storage is full. Export a backup, then delete some entries." : "This browser isn't saving your data (private mode?). Export a backup before closing.");
-    return false;
-  }
 }
 function saveSettings() { try { localStorage.setItem(KEY_SET, JSON.stringify(SET)); } catch (_) { toast("Settings couldn't be saved in this browser."); } applySettings(); }
 function applySettings() {
@@ -395,12 +461,12 @@ function applySettings() {
   S.aiOff = !SET.apiKey;
   voiceLang = SET.voice || "en-GB"; pickVoice();
 }
-function addEntry(doc) { S.entries.push({ id: newId(), ...doc }); persist(); onData(); }
-function updateEntry(id, patch) { const e = S.entries.find(x => x.id === id); if (!e) return; Object.assign(e, patch); persist(); onData(); }
-function deleteEntry(id) { S.entries = S.entries.filter(x => x.id !== id); persist(); onData(); }
-function setStats(st) { S.stats = st; persist(); }
-window.addEventListener("storage", ev => {   // keep two open tabs in step
-  if (ev.key !== KEY_DATA || !ev.newValue) return;
+function addEntry(doc) { const e = { id: newId(), ...doc }; S.entries.push(e); saveEntry(e); onData(); }
+function updateEntry(id, patch) { const e = S.entries.find(x => x.id === id); if (!e) return; Object.assign(e, patch); saveEntry(e); onData(); }
+function deleteEntry(id) { S.entries = S.entries.filter(x => x.id !== id); removeEntry(id); onData(); }
+function setStats(st) { S.stats = st; saveStats(); }
+window.addEventListener("storage", ev => {   // keep two open tabs in step (fallback storage only)
+  if (storeMode !== "ls" || ev.key !== KEY_DATA || !ev.newValue) return;
   try { const d = JSON.parse(ev.newValue); S.entries = d.entries || []; S.stats = d.stats || {}; onData(); } catch (_) {}
 });
 function downloadFile(name, data, type) {
@@ -615,12 +681,12 @@ const AI_LEVELS = [
 async function aiSuggest({ topic, level, theme }) {
   const T = AI_TOPICS.find(x => x[0] === topic) || AI_TOPICS[0];
   const L = AI_LEVELS.find(x => x[0] === level) || AI_LEVELS[0];
-  const avoid = [...new Set([...S.entries.map(e => e.term), ...S.add.shown])].slice(-600);
+  const avoid = [...new Set([...S.entries.map(e => e.term), ...S.add.shown])];
   const prompt = `You are an expert lexicographer and English teacher. Choose 5 English words, phrasal verbs, idioms, collocations or expressions that are well worth learning for an Egyptian Arabic-speaking university professor with advanced English.
 Topic: ${T[2]}.${theme ? `\nFocus especially on: ${theme.slice(0, 120)}.` : ""}
 Level: ${L[2]}.
 Choose expressions that are genuinely useful, natural and current. Vary the kinds (not all idioms). Do not choose any of these, which the learner already has or has seen:
-${JSON.stringify(avoid)}
+${avoid.join("; ") || "(none yet)"}
 
 Reply with only a JSON array of 5 objects. Each object has exactly these fields:
 ${ENTRY_FIELDS}
@@ -1106,16 +1172,26 @@ function matchScore(e, q, qt) {
   const r = hit / qt.length;
   return r >= (qt.length <= 2 ? .99 : .6) ? Math.round(r * 60) : 0;
 }
-async function aiSearch(q) {
-  const pool = S.entries.slice(0, 400).map((e, i) => ({ i, term: e.term, meaning: e.meaning || "", ar: e.ar || "" }));
+async function aiSearchChunk(q, chunk) {
   const prompt = `A learner is searching their personal vocabulary list. The search may be in English or Arabic, and may describe the meaning in their own words rather than quote the expression.
 Search: """${q.slice(0, 300)}"""
 List (index, expression, meaning, Arabic):
-${pool.map(x => `${x.i}. ${x.term} | ${x.meaning} | ${x.ar}`).join("\n")}
+${chunk.map((e, i) => `${i}. ${e.term} | ${e.meaning || ""} | ${e.ar || ""}`).join("\n")}
 Reply with only a JSON array of the indexes of the expressions whose meaning matches the search, best match first, at most 8. Reply [] if none fit.`;
   const out = await askJSON(prompt, { maxTokens: 200 });
   const idx = Array.isArray(out) ? out : (Array.isArray(out?.indexes) ? out.indexes : []);
-  return [...new Set(idx.map(n => parseInt(n, 10)).filter(n => n >= 0 && n < pool.length))].map(n => S.entries[n].id);
+  return [...new Set(idx.map(n => parseInt(n, 10)).filter(n => n >= 0 && n < chunk.length))].map(n => chunk[n].id);
+}
+async function aiSearch(q) {
+  const CH = 300, chunks = [];
+  for (let i = 0; i < S.entries.length; i += CH) chunks.push(S.entries.slice(i, i + CH));
+  const results = new Array(chunks.length); let next = 0;
+  await Promise.all(Array.from({ length: Math.min(3, chunks.length) }, async () => {
+    while (next < chunks.length) { const k = next++; results[k] = await aiSearchChunk(q, chunks[k]); }
+  }));
+  const out = [];
+  for (let r = 0; r < 8; r++) for (const ids of results) if (ids?.[r]) out.push(ids[r]);
+  return out.slice(0, 12);
 }
 
 /* ---------- Portfolio ---------- */
@@ -1177,10 +1253,10 @@ function renderList() {
       : `<div class="notice"><span>${list.length ? "Not what you're looking for?" : "No words match."} Let the AI find expressions with this meaning.</span><button class="btn" id="pf-ai">${ICON.spark} Search by meaning</button></div>`)
     : "";
   if (!list.length) { box.innerHTML = (q && !S.aiOff ? "" : `<p class="muted" style="padding:12px 2px">No expressions match. Try another search or filter.</p>`) + aiRow; return; }
-  box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<button class="entry${e.id === curId ? " current" : ""}" data-open="${e.id}">
+  box.innerHTML = list.map(e => { const [l, c] = statusOf(e); return `<div class="entry-wrap"><button class="entry${e.id === curId ? " current" : ""}${canSpeak ? " has-speak" : ""}" data-open="${e.id}">
       <span class="t">${esc(e.term)}</span><span class="a ar" lang="ar">${esc(e.ar)}</span>
       ${e.meaning ? `<span class="m">${esc(e.meaning)}</span>` : ""}
-      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${freqMeter(e, true)}${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>`; }).join("") + aiRow;
+      <span class="meta"><span class="chip ${c}">${l}</span>${pips(e)}<span class="small muted">${dueLabel(e)}</span>${freqMeter(e, true)}${e.example ? '<span class="tag ex">Example</span>' : ""}</span></button>${canSpeak ? `<button class="iconbtn entry-speak" data-speak="${esc(e.term)}" aria-label="Listen to ${esc(e.term)}" title="Listen">${ICON.speak}</button>` : ""}</div>`; }).join("") + aiRow;
   updateListenBar();
 }
 
@@ -1259,7 +1335,7 @@ document.addEventListener("click", async ev => {
   if ((t.dataset.view || t.dataset.go) && rec) { try { rec.stop(); } catch (_) {} }
   if (t.dataset.view) { if (S.session && !S.session.finished && t.dataset.view !== "today") { S.session.ctl?.abort(); S.session = null; } setView(t.dataset.view); return; }
   if (t.dataset.go) { S.session = null; setView(t.dataset.go); return; }
-  if (t.dataset.speak !== undefined) { speak(t.dataset.speak); return; }
+  if (t.dataset.speak !== undefined) { speak(t.dataset.speak); if (t.classList.contains("entry-speak")) { t.classList.add("playing"); setTimeout(() => t.classList.remove("playing"), 1200); } return; }
   if (t.dataset.mic) { toggleMic(t.dataset.mic); return; }
   const id = t.id;
 
@@ -1438,7 +1514,7 @@ function buildSettings() {
   </div>
   <div class="card pad setgroup">
     <h3>Backup and moving between devices</h3>
-    <p class="small muted">Your portfolio is saved in this browser on this device. To use it on your phone and your laptop, export a backup on one and import it on the other. Export regularly so nothing is lost if the browser's data is cleared.</p>
+    <p class="small muted">Your portfolio is saved in this browser's own database on this device, with room for tens of thousands of expressions. To use it on your phone and your laptop, export a backup on one and import it on the other. Export regularly so nothing is lost if the browser's data is cleared.</p>
     <div class="row"><button class="btn primary" id="s-export">Export backup</button><label class="btn" for="s-import">Import backup</label><input type="file" id="s-import" accept="application/json,.json" hidden></div>
     <p class="small muted">Last backup from this device: ${last}. ${plural(S.entries.length, "expression")} stored here.</p>
     ${imp ? `<div class="confirm" style="background:var(--accent-soft);border-color:var(--line)"><span>Backup from ${esc(imp.date)} with ${plural(imp.entries.length, "expression")}. Merge keeps both and takes the most-practised copy of each expression; Replace swaps your current portfolio for the backup.</span><span class="row"><button class="btn primary" id="s-merge">Merge</button><button class="btn" id="s-replace">Replace</button><button class="btn ghost" id="s-imp-cancel">Cancel</button></span></div>` : ""}
@@ -1482,10 +1558,11 @@ function applyImport(mode) {
   if (mode === "replace") toast("Portfolio replaced from backup");
 }
 
-function init() {
+async function init() {
   $("#lb-repeat").innerHTML = ICON.speak; $("#lb-stop").innerHTML = ICON.close;
   $("#lb-next").innerHTML = `Next and Listen <svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
-  loadAll();
+  build();
+  await loadAll();
   S.loaded = true; S.imagesOk = true;
   build();
 }
